@@ -28,7 +28,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true, useCreateIndex : true })
     console.log('Disconnecting...');
     mongoose.disconnect();
   })
-  .catch(err => {
+  .catch(err => { 
     console.error(err);
   });
 
