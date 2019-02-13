@@ -4,6 +4,7 @@ const express = require('express');
 
 const Post = require('../models/post');
 const Comment = require('../models/comment');
+const User = require('../models/user');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ const router = express.Router();
 router.get('/', (req, res, next) => {
   Post.find({})
     .populate('comments')
+    .populate('userId')
     .then(posts => {
       res.json(posts);
     })
