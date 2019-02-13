@@ -11,6 +11,7 @@ const jwtStrategy = require('./passport/jwt');
 
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
+const postsRouter = require('./routes/posts');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
 
@@ -39,6 +40,7 @@ const options = {session: false, failWithError: true};
 const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
+app.use('/posts', jwtAuth, postsRouter);
 app.use('/auth/users', usersRouter);
 app.use('/auth/login', localAuth, authRouter); //for login
 app.use('/auth', jwtAuth, authRouter); //for refresh
