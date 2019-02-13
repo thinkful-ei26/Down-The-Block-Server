@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
+const {sortPostsChronologically} = require ('../helper-functions');
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.get('/', (req, res, next) => {
     })
     .populate('userId')
     .then(posts => {
+      sortPostsChronologically(posts);
       res.json(posts);
     })
     .catch(err => {
