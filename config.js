@@ -5,7 +5,7 @@ require('dotenv').config(); //this is what we used to set up the env variable fo
 module.exports = {
   CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
 
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://dev:watch123@ds237574.mlab.com:37574/neighborhood',
+  MONGODB_URI: process.env.MONGODB_URI || '',
 
   TEST_MONGODB_URI: process.env.TEST_MONGODB_URI || '',
 

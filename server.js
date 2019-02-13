@@ -9,7 +9,6 @@ const cloudinary = require('cloudinary');
 
 const localStrategy = require('./passport/local');
 const jwtStrategy = require('./passport/jwt');
-const bodyParser = require('body-parser');
 
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
@@ -41,8 +40,8 @@ const options = {session: false, failWithError: true};
 const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
-app.use('/auth/users', usersRouter);
-app.use('/auth/login', localAuth, authRouter); //for login
+app.use('/users', usersRouter);
+app.use('/login', localAuth, authRouter); //for login
 app.use('/', jwtAuth, authRouter); //for refresh
 //Any endpoint that passes the jwtAuth strategy and is validted: The `req.user` has a value now because of `done(null, payload.user)` in JWT Strategy
 
