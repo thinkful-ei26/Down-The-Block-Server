@@ -5,11 +5,9 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const passport = require('passport');
-const cloudinary = require('cloudinary');
 
 const localStrategy = require('./passport/local');
 const jwtStrategy = require('./passport/jwt');
-const bodyParser = require('body-parser');
 
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
@@ -43,7 +41,7 @@ const localAuth = passport.authenticate('local', options);
 
 app.use('/auth/users', usersRouter);
 app.use('/auth/login', localAuth, authRouter); //for login
-app.use('/', jwtAuth, authRouter); //for refresh
+app.use('/auth', jwtAuth, authRouter); //for refresh
 //Any endpoint that passes the jwtAuth strategy and is validted: The `req.user` has a value now because of `done(null, payload.user)` in JWT Strategy
 
 // Custom 404 Not Found route handler
