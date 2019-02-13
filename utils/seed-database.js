@@ -4,8 +4,10 @@ const mongoose = require('mongoose');
 const { MONGODB_URI } = require('../config');
 
 const User = require('../models/user');
+const Comment = require('../models/comment');
+const Post = require('../models/post');
 
-const { users } = require('../db/seed/data');
+const { users, comments, posts } = require('../db/seed/data');
 
 console.log(`Connecting to mongodb at ${MONGODB_URI}`);
 
@@ -18,11 +20,14 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true, useCreateIndex : true })
     console.log('Seeding Database...');
     return Promise.all([
       User.insertMany(users),
+      Post.insertMany(posts),
+      Comment.insertMany(comments),
       // User.createIndexes()
     ]);
   })
-  .then(([users]) => {
-    console.log(`Inserted ${users.length} users`);
+  .then(([users, posts, comments]) => {
+    console.log(comments);
+    console.log(`Inserted ${users.length} users, Inserted ${posts.length} posts, and ${comments.length} comments`);
   })
   .then(() => {
     console.log('Disconnecting...');
