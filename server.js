@@ -41,7 +41,7 @@ const options = {session: false, failWithError: true};
 const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
-app.use('/posts', postsRouter);
+app.use('/posts', jwtAuth, postsRouter);
 app.use('/comments', commentsRouter);
 app.use('/auth/users', usersRouter);
 app.use('/auth/login', localAuth, authRouter); //for login
