@@ -15,18 +15,37 @@ router.get('/:geo', (req, res, next) => {
   const coordsObject = JSON.parse(req.params.geo);
 
   // each 0.014631 of latitude equals one mile
-  const oneMileLatitude = 0.014631;
-  const latitudeMin = coordsObject.latitude - oneMileLatitude;
-  const latitudeMax = coordsObject.latitude + oneMileLatitude;
-  console.log(latitudeMax, latitudeMin);
-  const latitudeSearch = { 'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}};
+  // const oneMileLatitudeInDegrees = 0.014631;
+  const latitudeMin = coordsObject.latitude - 0.014631;
+  const latitudeMax = coordsObject.latitude + 0.014631;
+  // console.log(latitudeMax, latitudeMin);
+  // const latitudeSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}};
 
-  const oneDegreeLongitude = Math.cos(coordsObject.latitude) * 69.172;
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+  // const cosine = Math.cos(coordsObject.latitude);
+
+  // console.log(cosine);
 
   console.log(oneDegreeLongitude);
 
+  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
 
-  Post.find(latitudeSearch)
+  console.log(oneMileLongitudeInDegrees);
+
+  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+  const longitudeMax = coordsObject.latitude + oneMileLongitudeInDegrees;
+
+  // ONE MILE AT MY LAT IS EQUAL TO 0.017457206881313057 degrees
+
+  // ONE MILE AT THE EQUATOR IS EQUAL TO 0.01445713459592308804394968917161 DEGREES
+
+  const longitudeSearch = {'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+
+  const locationSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+
+
+
+  Post.find(locationSearch)
     // .populate({
     //   path: 'comments',
     //   populate: { path: 'userId' }
