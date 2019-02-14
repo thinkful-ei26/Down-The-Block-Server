@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post('/', (req, res) => {
   const authToken = createAuthToken(req.user);
+  console.log(authToken); 
   res.json({ authToken });
 });
 
