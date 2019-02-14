@@ -30,7 +30,7 @@ const comments = [
 const posts = [
   {
     _id: '222222222222222222222201',
-    category: 'personal',
+    category: 'Personal',
     date: '2016-10-26',
     coordinates: 'placeholder',
     comments: ['333333333333333333333301', '333333333333333333333302'],
@@ -39,7 +39,7 @@ const posts = [
   },
   {
     _id: '222222222222222222222202',
-    category: 'crime',
+    category: 'Crime',
     date: '2018-10-26',
     coordinates: 'placeholder',
     comments: ['333333333333333333333303', '333333333333333333333304'],
