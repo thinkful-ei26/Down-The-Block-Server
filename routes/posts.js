@@ -12,7 +12,23 @@ const router = express.Router();
 
 /* GET ALL POSTS */
 router.get('/:geo', (req, res, next) => {
-  Post.find({})
+  const coordsObject = JSON.parse(req.params.geo);
+
+  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  const latitudeMin = coordsObject.latitude - 0.014631;
+  const latitudeMax = coordsObject.latitude + 0.014631;
+
+  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion
+  // ONE MILE AT MY LAT(~34) IS EQUAL TO 0.017457206881313057 degrees
+  // ONE MILE AT THE EQUATOR IS EQUAL TO 0.01445713459592308804394968917161 DEGREES
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
+
+  const locationSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+
+  Post.find(locationSearch)
     .populate({
       path: 'comments',
       populate: { path: 'userId' }
@@ -32,7 +48,7 @@ router.post('/:geo', (req, res, next) => {
   const newPost = req.body;
   const userId = req.user.id;
   newPost.userId = userId;
-  newPost.coordinates = req.params.geo;
+  newPost.coordinates = JSON.parse(req.params.geo);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -44,10 +60,45 @@ router.post('/:geo', (req, res, next) => {
     };
     return next(err);
   }
+
+  console.log(newPost);
   
   Post.create(newPost)
     .then((post)=>{
+      console.log('here5');
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
+    })
+    .catch(err => {
+      console.log('here6');
+      next(err);
+    });
+});
+
+/*EDIT A POST*/
+router.put('/:postId', (req, res, next) => {
+  const editedPost = req.body;
+  const postId = req.params.postId;
+  const userId = req.user.id;
+  editedPost.userId = userId;
+
+  if(!editedPost.category || !editedPost.date || !editedPost.content){
+    //this error should be displayed to user incase they forget to add a note. Dont trust client!
+    const err = {
+      message: 'Missing information for the post!',
+      reason: 'MissingContent',
+      status: 400,
+      location: 'post'
+    };
+    return next(err);
+  }
+
+  //check if user is authorized to update this post
+  Post.find({_id: postId, userId})
+    .then(()=>{
+      return Post.findOneAndUpdate({_id: postId, userId: userId}, editedPost, {new: true}).populate('comments');
+    })
+    .then((post) => {
+      res.status(200).json(post);
     })
     .catch(err => {
       next(err);

@@ -42,7 +42,11 @@ const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
 app.use('/posts', jwtAuth, postsRouter);
+<<<<<<< HEAD
 app.use('/comments', commentsRouter);
+=======
+app.use('/comments', jwtAuth, commentsRouter);
+>>>>>>> d982e11d252427cdca4d8dabcd1f0482aba6d6b0
 app.use('/auth/users', usersRouter);
 app.use('/auth/login', localAuth, authRouter); //for login
 app.use('/auth', jwtAuth, authRouter); //for refresh
