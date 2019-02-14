@@ -29,10 +29,15 @@ router.get('/:geo', (req, res, next) => {
 
 /*CREATE A POST*/
 router.post('/:geo', (req, res, next) => {
+  console.log('here');
   const newPost = req.body;
+  console.log('here2');
+  console.log(req.user.id);
   const userId = req.user.id;
+  console.log('here3');
   newPost.userId = userId;
-  newPost.coordinates = req.params.geo;
+  console.log('here4');
+  newPost.coordinates = JSON.parse(req.params.geo);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -44,12 +49,16 @@ router.post('/:geo', (req, res, next) => {
     };
     return next(err);
   }
+
+  console.log(newPost);
   
   Post.create(newPost)
     .then((post)=>{
+      console.log('here5');
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
+      console.log('here6');
       next(err);
     });
 });
