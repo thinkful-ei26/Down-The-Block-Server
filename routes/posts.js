@@ -14,46 +14,28 @@ const router = express.Router();
 router.get('/:geo', (req, res, next) => {
   const coordsObject = JSON.parse(req.params.geo);
 
-  // each 0.014631 of latitude equals one mile
-  // const oneMileLatitudeInDegrees = 0.014631;
+  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
   const latitudeMin = coordsObject.latitude - 0.014631;
   const latitudeMax = coordsObject.latitude + 0.014631;
-  // console.log(latitudeMax, latitudeMin);
-  // const latitudeSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}};
 
-  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-  // const cosine = Math.cos(coordsObject.latitude);
-
-  // console.log(cosine);
-
-  console.log(oneDegreeLongitude);
-
-  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-
-  console.log(oneMileLongitudeInDegrees);
-
-  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
-  const longitudeMax = coordsObject.latitude + oneMileLongitudeInDegrees;
-
-  // ONE MILE AT MY LAT IS EQUAL TO 0.017457206881313057 degrees
-
+  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion
+  // ONE MILE AT MY LAT(~34) IS EQUAL TO 0.017457206881313057 degrees
   // ONE MILE AT THE EQUATOR IS EQUAL TO 0.01445713459592308804394968917161 DEGREES
-
-  const longitudeSearch = {'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 
   const locationSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
 
-
-
   Post.find(locationSearch)
-    // .populate({
-    //   path: 'comments',
-    //   populate: { path: 'userId' }
-    // })
-    // .populate('userId')
+    .populate({
+      path: 'comments',
+      populate: { path: 'userId' }
+    })
+    .populate('userId')
     .then(posts => {
       sortPostsChronologically(posts);
-      // console.log(posts);
       res.json(posts);
     })
     .catch(err => {
