@@ -12,15 +12,29 @@ const router = express.Router();
 
 /* GET ALL POSTS */
 router.get('/:geo', (req, res, next) => {
-  const coordsObj = JSON.parse(req.params.geo);
-  Post.find({})
-    .populate({
-      path: 'comments',
-      populate: { path: 'userId' }
-    })
-    .populate('userId')
+  const coordsObject = JSON.parse(req.params.geo);
+
+  // each 0.014631 of latitude equals one mile
+  const oneMileLatitude = 0.014631;
+  const latitudeMin = coordsObject.latitude - oneMileLatitude;
+  const latitudeMax = coordsObject.latitude + oneMileLatitude;
+  console.log(latitudeMax, latitudeMin);
+  const latitudeSearch = { 'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}};
+
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude) * 69.172;
+
+  console.log(oneDegreeLongitude);
+
+
+  Post.find(latitudeSearch)
+    // .populate({
+    //   path: 'comments',
+    //   populate: { path: 'userId' }
+    // })
+    // .populate('userId')
     .then(posts => {
       sortPostsChronologically(posts);
+      // console.log(posts);
       res.json(posts);
     })
     .catch(err => {
@@ -33,7 +47,7 @@ router.post('/:geo', (req, res, next) => {
   const newPost = req.body;
   const userId = req.user.id;
   newPost.userId = userId;
-  newPost.coordinates = req.params.geo;
+  newPost.coordinates = JSON.parse(req.params.geo);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
