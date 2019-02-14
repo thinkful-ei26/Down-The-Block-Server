@@ -29,14 +29,9 @@ router.get('/:geo', (req, res, next) => {
 
 /*CREATE A POST*/
 router.post('/:geo', (req, res, next) => {
-  console.log('here');
   const newPost = req.body;
-  console.log('here2');
-  console.log(req.user.id);
   const userId = req.user.id;
-  console.log('here3');
   newPost.userId = userId;
-  console.log('here4');
   newPost.coordinates = JSON.parse(req.params.geo);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
@@ -59,6 +54,37 @@ router.post('/:geo', (req, res, next) => {
     })
     .catch(err => {
       console.log('here6');
+      next(err);
+    });
+});
+
+/*EDIT A POST*/
+router.put('/:postId', (req, res, next) => {
+  const editedPost = req.body;
+  const postId = req.params.postId;
+  const userId = req.user.id;
+  editedPost.userId = userId;
+
+  if(!editedPost.category || !editedPost.date || !editedPost.content){
+    //this error should be displayed to user incase they forget to add a note. Dont trust client!
+    const err = {
+      message: 'Missing information for the post!',
+      reason: 'MissingContent',
+      status: 400,
+      location: 'post'
+    };
+    return next(err);
+  }
+
+  //check if user is authorized to update this post
+  Post.find({_id: postId, userId})
+    .then(()=>{
+      return Post.findOneAndUpdate({_id: postId, userId: userId}, editedPost, {new: true}).populate('comments');
+    })
+    .then((post) => {
+      res.status(200).json(post);
+    })
+    .catch(err => {
       next(err);
     });
 });
