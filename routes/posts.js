@@ -89,5 +89,30 @@ router.put('/:postId', (req, res, next) => {
     });
 });
 
+/* DELETE A POST */
+router.delete('/:postId', (req, res, next) => {
+  const { postId } = req.params;
+  const userId = req.user.id;
+
+  const postDeletePromise =  Post.findOneAndDelete({_id:postId, userId});
+  const commentsDeletePromise =  Comment.deleteMany({postId:postId});
+
+
+  return Promise.all([postDeletePromise, commentsDeletePromise])
+    .then((post) => {
+      if(!post){
+        // if trying to delete something that no longer exists or never did
+        return next();
+      }
+      else{
+        res.sendStatus(204);
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+
 module.exports = router;
 
