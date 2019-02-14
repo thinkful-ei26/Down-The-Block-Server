@@ -1,22 +1,26 @@
 'use strict';
 
 const express = require('express');
+const mongoose = require('mongoose');
 
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
+const {sortPostsChronologically} = require ('../helper-functions');
 
 const router = express.Router();
 
-/* GET GEOLOCATED POSTS */
+/* GET ALL POSTS */
 router.get('/:geo', (req, res, next) => {
-  // console.log(req.params.geo);
-  let parsedJSON = JSON.parse(req.params.geo);
-  console.log(parsedJSON);
+  const coordsObj = JSON.parse(req.params.geo);
   Post.find({})
-    .populate('comments')
+    .populate({
+      path: 'comments',
+      populate: { path: 'userId' }
+    })
     .populate('userId')
     .then(posts => {
+      sortPostsChronologically(posts);
       res.json(posts);
     })
     .catch(err => {
@@ -24,22 +28,31 @@ router.get('/:geo', (req, res, next) => {
     });
 });
 
-// /* GET GEOLOCATED POSTS */
+/*CREATE A POST*/
+router.post('/:geo', (req, res, next) => {
+  const newPost = req.body;
+  const userId = req.user.id;
+  newPost.userId = userId;
+  newPost.coordinates = req.params.geo;
 
-// router.get('/', (req, res, next) => {
+  if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
+    //this error should be displayed to user incase they forget to add a note. Dont trust client!
+    const err = {
+      message: 'Missing information for the post!',
+      reason: 'MissingContent',
+      status: 400,
+      location: 'post'
+    };
+    return next(err);
+  }
   
-//   console.log(req);
-
-
-//   Post.find({})
-//     .populate('comments')
-//     .populate('userId')
-//     .then(posts => {
-//       res.json(posts);
-//     })
-//     .catch(err => {
-//       next(err);
-//     });
-// });
+  Post.create(newPost)
+    .then((post)=>{
+      return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
 
 module.exports = router;
