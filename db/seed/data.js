@@ -36,7 +36,7 @@ const posts = [
     _id: '222222222222222222222201',
     category: 'Personal',
     date: '2016-10-26',
-    coordinates: 'placeholder',
+    coordinates: {latitude: 34.155650699999995, longitude: -118.46158659999999},
     comments: ['333333333333333333333301', '333333333333333333333302'],
     content: 'Throwing a party this sat night',
     userId: '000000000000000000000001'
@@ -45,7 +45,7 @@ const posts = [
     _id: '222222222222222222222202',
     category: 'Crime',
     date: '2018-10-26',
-    coordinates: 'placeholder',
+    coordinates: {latitude: 34.155650699999995, longitude: -118.46158659999999},
     comments: ['333333333333333333333303', '333333333333333333333304'],
     content: 'Robbery on east side of Noble. Be safe',
     userId: '000000000000000000000002'

@@ -95,7 +95,7 @@ router.put('/:postId', (req, res, next) => {
   //check if user is authorized to update this post
   Post.find({_id: postId, userId})
     .then(()=>{
-      return Post.findOneAndUpdate({_id: postId, userId: userId}, editedPost, {new: true}).populate('comments');
+      return Post.findOneAndUpdate({_id: postId, userId: userId}, {category: editedPost.category, content: editedPost.content}, {new: true}).populate('comments');
     })
     .then((post) => {
       res.status(200).json(post);
