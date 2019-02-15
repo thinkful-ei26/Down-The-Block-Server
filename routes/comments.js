@@ -9,6 +9,7 @@ const router = express.Router();
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
+  
     const { content, postId, userId } = req.body
     console.log('requestBody', req.body);
     const date = '2016-10-26';
@@ -27,15 +28,18 @@ router.post('/', (req, res, next) => {
         .then(post => {
           console.log(post);
           post.comments.push(comment._id);
+          console.log(post);
           return post.save();
         });
     })
     .then(result => {
+      console.log(Post);
       console.log('3rd then');
       console.log(result);
       return res.status(201).location(`http://${req.headers.host}/comments/${result.id}`).json(result);
     })
     .catch(err => next(err));
+    
 });
 
 module.exports = router;
