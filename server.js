@@ -34,7 +34,7 @@ io.on('connection', function(socket){
 
 app.use(
   cors({
-    origin: "https://neighbors-server.herokuapp.com",
+    origin: CLIENT_ORIGIN,
     "Access-Control-Allow-Credentials": true
   })
 );
