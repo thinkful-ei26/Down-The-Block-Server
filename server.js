@@ -17,10 +17,25 @@ const commentsRouter = require('./routes/comments');
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
 
 const app = express();
+const http = require('http');
+const socketIO = require('socket.io');
+let server = http.createServer(app);
+let io = socketIO(server);
+
+app.get('/chat', function(req, res){
+  res.sendFile(__dirname + '/index.html');
+});
+
+io.on('connection', function(socket){
+  socket.on('chat-message', function(msg){
+    io.emit('chat-message', msg);
+  });
+});
 
 app.use(
   cors({
-    origin: CLIENT_ORIGIN
+    origin: CLIENT_ORIGIN,
+    "Access-Control-Allow-Credentials": true
   })
 );
 
@@ -75,7 +90,7 @@ if (require.main === module) {
       console.error(err);
     });
 
-  app.listen(PORT, function () {
+    server.listen(PORT, function () {
     console.info(`Server listening on ${this.address().port}`);
   }).on('error', err => {
     console.error(err);
