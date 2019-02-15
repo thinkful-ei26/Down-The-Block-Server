@@ -9,31 +9,22 @@ const router = express.Router();
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-    const { content, postId, userId } = req.body
-    console.log('requestBody', req.body);
-    const date = '2016-10-26';
-    const newComment = { content, userId, date, postId };
-    console.log(newComment);
-    User.findById({_id:userId})
-    .then(()=> {
-      console.log(newComment);
-      console.log('1st then');
-      return Comment.create(newComment); 
-    })
+  const { content, postId, userId } = req.body;
+  const date = '2016-10-26';
+  const newComment = { content, userId, date, postId };
+
+  Comment.create(newComment)
     .then(comment => {
-      console.log('2nd then');
-      console.log(comment);
-      return Post.findById({_id:postId})
-        .then(post => {
-          console.log(post);
-          post.comments.push(comment._id);
-          return post.save();
-        });
+      return Post.findByIdAndUpdate( {_id: postId}, {$push: {comments: comment.id}}, {new: true})
+        .populate({
+          path: 'comments',
+          populate: { path: 'userId' }
+        })
+        .populate('userId');
     })
-    .then(result => {
-      console.log('3rd then');
-      console.log(result);
-      return res.status(201).location(`http://${req.headers.host}/comments/${result.id}`).json(result);
+    .then(post => {
+      console.log('the result is', post);
+      return res.status(201).location(`http://${req.headers.host}/posts/${post.id}`).json(post);
     })
     .catch(err => next(err));
 });
