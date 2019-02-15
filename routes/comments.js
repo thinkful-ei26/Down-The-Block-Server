@@ -10,8 +10,9 @@ const router = express.Router();
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
     const { content, postId, userId } = req.body
+    console.log('requestBody', req.body);
     const date = '2016-10-26';
-    const newComment = { content, userId, date };
+    const newComment = { content, userId, date, postId };
     console.log(newComment);
     User.findById({_id:userId})
     .then(()=> {
