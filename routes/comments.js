@@ -9,20 +9,12 @@ const router = express.Router();
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-<<<<<<< HEAD
     const { content, postId, userId } = req.body
     console.log('requestBody', req.body);
     const date = '2016-10-26';
     const newComment = { content, userId, date, postId };
     console.log(newComment);
     User.findById({_id:userId})
-=======
-  const { content, postId, userId } = req.body;
-  const date = '2016-10-26';
-  const newComment = { content, userId, date };
-  console.log(newComment);
-  User.findById({_id:userId})
->>>>>>> 38c248d0ce3ed63cffce564788362d21e4ca1440
     .then(()=> {
       console.log(newComment);
       console.log('1st then');
