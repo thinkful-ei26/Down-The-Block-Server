@@ -6,7 +6,7 @@ const postSchema = new mongoose.Schema({
   category: { type: String, required: true },
   date: { type: String, required: true },
   content: { type: String, required: true },
-  coordinates: { type: String, required: true },
+  coordinates: { type: Object, required: true },
   image: { type: String },
   comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comment'}],
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
