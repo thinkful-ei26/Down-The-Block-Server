@@ -4,6 +4,7 @@ const express = require('express');
 const passport = require('passport');
 const cloudinary = require('cloudinary');
 const formData = require('express-form-data');
+const {isEmpty} = require ('../helper-functions');
 
 const jwtStrategy = require('../passport/jwt');
 const options = {session: false, failWithError: true};
@@ -142,18 +143,23 @@ router.post('/', (req,res,next) => {
   firstName = capitalizeFirstLetter(firstName);
   lastName = capitalizeFirstLetter(lastName);
 
-  let photo = Object.values(req.files);
+  let photo = { public_id: '123' ,url: 'https://rlv.zcache.com/camera_shy_classic_round_sticker-reaaa9c7f1ab74894844ce85b105a742f_v9waf_8byvr_307.jpg' }; 
+  console.log('here');
+  if(!isEmpty(req.files)){
+    console.log('there are files');
+    photo = Object.values(req.files);
 
-  // first upload the image to cloudinary
-  cloudinary.uploader.upload(photo[0].path)
-    .then(results => {
-      console.log('results from cloudinary:', results);
-      photo = {
-        public_id: results.public_id,
-        url: results.secure_url,
-      };
-      return User.hashPassword(password);
-    })
+    // first upload the image to cloudinary
+    cloudinary.uploader.upload(photo[0].path)
+      .then(results => {
+        console.log('results from cloudinary:', results);
+        photo = {
+          public_id: results.public_id,
+          url: results.secure_url,
+        };
+      });
+  }
+  User.hashPassword(password)
     .then(digest => {
       console.log(username,digest,firstName,lastName,photo);
       const newUser = {
