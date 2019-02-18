@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const passport = require('passport');
+const cloudinary = require('cloudinary');
 
 const localStrategy = require('./passport/local');
 const jwtStrategy = require('./passport/jwt');
@@ -15,6 +16,12 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
+
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.API_KEY, 
+  api_secret: process.env.API_SECRET
+});
 
 const app = express();
 const http = require('http');
@@ -35,7 +42,7 @@ io.on('connection', function(socket){
 app.use(
   cors({
     origin: CLIENT_ORIGIN,
-    "Access-Control-Allow-Credentials": true
+    'Access-Control-Allow-Credentials': true
   })
 );
 
@@ -90,7 +97,7 @@ if (require.main === module) {
       console.error(err);
     });
 
-    server.listen(PORT, function () {
+  server.listen(PORT, function () {
     console.info(`Server listening on ${this.address().port}`);
   }).on('error', err => {
     console.error(err);

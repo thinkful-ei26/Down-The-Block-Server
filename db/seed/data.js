@@ -59,7 +59,11 @@ const users = [
     lastName: 'Mashian',
     username: 'nikmash',
     // hash for "password"
-    password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi'
+    password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi',
+    photo: { 
+      public_id: 'q0xyt2foximjiotzf4ry',
+      url:
+     'https://res.cloudinary.com/dnn1jf0pl/image/upload/v1550277125/q0xyt2foximjiotzf4ry.jpg' }
   },
   {
     _id: '000000000000000000000002',
@@ -67,7 +71,12 @@ const users = [
     lastName: 'Anderson',
     username: 'steve',
     // hash for "password"
-    password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi'
+    password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi',
+    photo: { 
+      public_id: 'q0xyt2foximjiotzf4ry',
+      url:
+     'https://res.cloudinary.com/dnn1jf0pl/image/upload/v1550277125/q0xyt2foximjiotzf4ry.jpg' 
+    }
   }
 ];
 
