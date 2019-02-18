@@ -10,6 +10,7 @@ const router = express.Router();
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const { content, postId, userId } = req.body;
+  console.log('the userID is', userId);
   const date = '2016-10-26';
   const newComment = { content, userId, date, postId };
 

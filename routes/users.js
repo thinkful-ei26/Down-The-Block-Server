@@ -143,7 +143,7 @@ router.post('/', (req,res,next) => {
   firstName = capitalizeFirstLetter(firstName);
   lastName = capitalizeFirstLetter(lastName);
 
-  let photo = { public_id: '123' ,url: 'https://rlv.zcache.com/camera_shy_classic_round_sticker-reaaa9c7f1ab74894844ce85b105a742f_v9waf_8byvr_307.jpg' }; 
+  let photo = { public_id: 'wnu7fkqcb2jd2ilai5q8' ,url: 'https://res.cloudinary.com/dnn1jf0pl/image/upload/v1550532780/wnu7fkqcb2jd2ilai5q8.png' }; 
   let currentUser;
 
   User.hashPassword(password)
