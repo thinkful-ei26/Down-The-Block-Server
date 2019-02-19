@@ -404,6 +404,7 @@ router.put('/password', jwtAuth, (req,res,next) => {
       return User.findOneAndUpdate({_id: userId}, updatedUser, {new: true});
     })
     .then(user => {
+      console.log('USER IS', user);
       return res.json(user);
     })
     .catch(err => {
