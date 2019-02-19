@@ -2,16 +2,26 @@
 
 const express = require('express');
 const passport = require('passport');
+const cloudinary = require('cloudinary');
+const formData = require('express-form-data');
+const {isEmpty} = require ('../helper-functions');
 
 const jwtStrategy = require('../passport/jwt');
+const options = {session: false, failWithError: true};
+const jwtAuth = passport.authenticate('jwt', options);
+passport.use(jwtStrategy);
 
 const User = require('../models/user');
 
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.API_KEY, 
+  api_secret: process.env.API_SECRET
+});
+
 const router = express.Router();
 
-passport.use(jwtStrategy);
-const options = {session: false, failWithError: true};
-const jwtAuth = passport.authenticate('jwt', options);
+router.use(formData.parse());
 
 function missingField(requiredFields, body){
   return requiredFields.find(field => !(field in body));
@@ -51,9 +61,9 @@ function capitalizeFirstLetter(str) {
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
-
   //First do validation (dont trust client)
   const requiredFields = ['username', 'password', 'firstName', 'lastName'];
+
   let missing= missingField(requiredFields, req.body);
 
   if (missing) {
@@ -133,17 +143,50 @@ router.post('/', (req,res,next) => {
   firstName = capitalizeFirstLetter(firstName);
   lastName = capitalizeFirstLetter(lastName);
 
-  return User.hashPassword(password)
+  let photo = { public_id: 'wnu7fkqcb2jd2ilai5q8' ,url: 'https://res.cloudinary.com/dnn1jf0pl/image/upload/v1550532780/wnu7fkqcb2jd2ilai5q8.png' }; 
+  let currentUser;
+
+  User.hashPassword(password)
     .then(digest => {
+      console.log('1. CREATING USER WITH INFO', username,digest,firstName,lastName,photo);
       const newUser = {
         username,
         password: digest,
         firstName,
-        lastName
+        lastName,
+        photo
       };
       return User.create(newUser);
     })
+    .then(user=> {
+      currentUser=user;
+      if(!isEmpty(req.files)){
+        console.log('2. UPLOADING TO CLOUDINARY');
+        photo = Object.values(req.files);
+        // first upload the image to cloudinary
+        return cloudinary.uploader.upload(photo[0].path);
+      }
+      else{
+        console.log('2. NOT UPLOADING TO CLOUDINARY');
+        return null;
+      }
+    })
+    .then(results => {
+      if(results){
+        console.log('3. CLOUDINARY RESULTS:', results);
+        photo = {
+          public_id: results.public_id,
+          url: results.secure_url,
+        };
+        return User.findOneAndUpdate({username: currentUser.username}, {photo: photo}, {new: true} );
+      }
+      else{
+        console.log('3. NO RESULTS:');
+        return currentUser;
+      }
+    })
     .then(user => {
+      console.log('4. USER IS', user);
       // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
       return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
     })
