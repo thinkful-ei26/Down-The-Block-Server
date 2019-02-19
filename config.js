@@ -3,7 +3,7 @@
 require('dotenv').config(); //this is what we used to set up the env variable for JWT_SECRET
 
 module.exports = {
-  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || 'https://neighbors-server.herokuapp.com',
+  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
 
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/neighborhood-watch',
 
