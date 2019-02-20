@@ -39,6 +39,7 @@ const posts = [
     coordinates: {latitude: 34.155650699999995, longitude: -118.46158659999999},
     comments: ['333333333333333333333301', '333333333333333333333302'],
     content: 'Throwing a party this sat night, apologize in advance for any noise! Please dont call the po-po',
+    audience: 'neighbors',
     userId: '000000000000000000000001'
   },
   {
@@ -48,6 +49,7 @@ const posts = [
     coordinates: {latitude: 34.155650699999995, longitude: -118.46158659999999},
     comments: ['333333333333333333333303', '333333333333333333333304'],
     content: 'There was a robbery on east side of Noble last night. No one was home, but the robbers escaped before authorities arrived.',
+    audience: 'city',
     userId: '000000000000000000000002'
   }
 ];

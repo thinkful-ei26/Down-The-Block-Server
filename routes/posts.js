@@ -11,8 +11,9 @@ const {sortPostsChronologically} = require ('../helper-functions');
 const router = express.Router();
 
 /* GET ALL POSTS */
-router.get('/:geo', (req, res, next) => {
+router.get('/:geo/:forum', (req, res, next) => {
   const coordsObject = JSON.parse(req.params.geo);
+  const forum = req.params.forum;
 
   // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
   const latitudeMin = coordsObject.latitude - 0.014631;
@@ -26,9 +27,9 @@ router.get('/:geo', (req, res, next) => {
   const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
   const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 
-  const locationSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+  const filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
 
-  Post.find(locationSearch)
+  Post.find(filter)
     .populate({
       path: 'comments',
       populate: { path: 'userId' }
@@ -51,7 +52,7 @@ router.post('/:geo', (req, res, next) => {
   newPost.userId = userId;
   newPost.coordinates = JSON.parse(req.params.geo);
 
-  if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
+  if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
     const err = {
       message: 'Missing information for the post!',
@@ -82,7 +83,7 @@ router.put('/:postId', (req, res, next) => {
   const userId = req.user.id;
   editedPost.userId = userId;
 
-  if(!editedPost.category || !editedPost.date || !editedPost.content){
+  if(!editedPost.category || !editedPost.date || !editedPost.content || !editedPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
     const err = {
       message: 'Missing information for the post!',
@@ -129,7 +130,6 @@ router.delete('/:postId', (req, res, next) => {
       next(err);
     });
 });
-
 
 module.exports = router;
 
