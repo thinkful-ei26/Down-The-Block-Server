@@ -10,6 +10,7 @@ const postSchema = new mongoose.Schema({
   image: { type: String },
   comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comment'}],
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  audience: { type: String, required: true }
 });
 
 //// Customize output for `res.json(data)`, `console.log(data)` etc.
