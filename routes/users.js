@@ -205,6 +205,7 @@ router.post('/', (req,res,next) => {
 
 /* UPDATE A USER'S BASIC INFO */
 router.put('/account', jwtAuth, (req,res,next) => {
+  console.log("HERE");
   const userId = req.user.id;
 
   //First do validation 
