@@ -13,9 +13,9 @@ passport.use(jwtStrategy);
 
 const User = require('../models/user');
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET
 });
 
@@ -58,6 +58,19 @@ function tooLargeField(sizedFields, body){
 function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+//Get A list of all users
+router.get('/', (req, res, next)=>{
+  User.find({}, function(err, users) {
+    let userMap = {};
+
+    users.forEach(function(user) {
+      userMap[user._id] = user;
+    });
+
+    res.send(userMap);
+  })
+  //get all users
+})
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
@@ -130,16 +143,16 @@ router.post('/', (req,res,next) => {
       reason: 'ValidationError',
       location: tooSmall || tooLarge,
       status: 422
-    };    
+    };
     return next(err);
   }
- 
+
   // // Username and password were validated as pre-trimmed, but we should trim the first and last name
   let {firstName, lastName, username, password} = req.body;
   firstName = firstName.trim();
   lastName = lastName.trim();
 
-  //capitalize first letter of firt and first letter of last 
+  //capitalize first letter of firt and first letter of last
   firstName = capitalizeFirstLetter(firstName);
   lastName = capitalizeFirstLetter(lastName);
 
@@ -197,7 +210,7 @@ router.post('/', (req,res,next) => {
           reason: 'ValidationError',
           location: 'username',
           status: 422
-        }; 
+        };
       }
       next(err);
     });
@@ -207,7 +220,7 @@ router.post('/', (req,res,next) => {
 router.put('/account', jwtAuth, (req,res,next) => {
   const userId = req.user.id;
 
-  //First do validation 
+  //First do validation
   const requiredFields = ['username', 'firstName', 'lastName'];
   let missing= missingField(requiredFields, req.body);
 
@@ -265,11 +278,11 @@ router.put('/account', jwtAuth, (req,res,next) => {
       reason: 'ValidationError',
       location: tooSmall,
       status: 422
-    };    
+    };
     return next(err);
   }
 
-  // // Username and password were validated as pre-trimmed, but we should trim the first and last 
+  // // Username and password were validated as pre-trimmed, but we should trim the first and last
   let {firstName, lastName, username} = req.body;
   firstName = firstName.trim();
   lastName = lastName.trim();
@@ -298,7 +311,7 @@ router.put('/account', jwtAuth, (req,res,next) => {
           reason: 'ValidationError',
           location: 'username',
           status: 422
-        }; 
+        };
       }
       next(err);
     });
@@ -308,7 +321,7 @@ router.put('/account', jwtAuth, (req,res,next) => {
 router.put('/password', jwtAuth, (req,res,next) => {
   const userId = req.user.id;
 
-  //First do validation 
+  //First do validation
   const requiredFields = ['oldPassword', 'newPassword'];
   let missing = missingField(requiredFields, req.body);
 
@@ -370,14 +383,14 @@ router.put('/password', jwtAuth, (req,res,next) => {
       reason: 'ValidationError',
       location: tooSmall || tooLarge,
       status: 422
-    };    
+    };
     return next(err);
   }
 
- 
+
   let {oldPassword, newPassword} = req.body;
 
-  let user; 
+  let user;
 
   User.find({_id: userId})
     .then(results => {
@@ -394,7 +407,7 @@ router.put('/password', jwtAuth, (req,res,next) => {
           reason: 'ValidationError',
           location: 'oldPassword',
           status: 401
-        };    
+        };
         return Promise.reject(err);
       }
       return User.hashPassword(newPassword);
