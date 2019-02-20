@@ -35,6 +35,7 @@ router.get('/:geo', (req, res, next) => {
     })
     .populate('userId')
     .then(posts => {
+      console.log('the posts are,', posts);
       sortPostsChronologically(posts);
       res.json(posts);
     })
