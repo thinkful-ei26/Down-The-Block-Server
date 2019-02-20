@@ -72,11 +72,6 @@ const users = [
     username: 'steve',
     // hash for "password"
     password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi',
-    photo: { 
-      public_id: 'wnu7fkqcb2jd2ilai5q8',
-      url:
-     'https://res.cloudinary.com/dnn1jf0pl/image/upload/v1550532780/wnu7fkqcb2jd2ilai5q8.png' 
-    }
   }
 ];
 
