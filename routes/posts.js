@@ -14,22 +14,41 @@ const router = express.Router();
 router.get('/:geo/:forum', (req, res, next) => {
   const coordsObject = JSON.parse(req.params.geo);
   const forum = req.params.forum;
+  let filter;
 
-  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  if(forum==='neighbors'){
+    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
   // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-  const latitudeMin = coordsObject.latitude - 0.014631;
-  const latitudeMax = coordsObject.latitude + 0.014631;
+    const latitudeMin = coordsObject.latitude - 0.014631;
+    const latitudeMax = coordsObject.latitude + 0.014631;
 
-  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-  // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-  // one mile at the equator 0.01445713459592308804394968917161 degrees
-  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-  console.log(oneMileLongitudeInDegrees);
-  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
-  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
+    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+    // one mile at the equator 0.01445713459592308804394968917161 degrees
+    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+    const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+    console.log(oneMileLongitudeInDegrees);
+    const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+    const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 
-  const filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+  } 
+  else{
+    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
+    const latitudeMin = coordsObject.latitude - 0.073155;
+    const latitudeMax = coordsObject.latitude + 0.073155;
+
+    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+    // one mile at the equator 0.01445713459592308804394968917161 degrees
+    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+    const fiveMilesLongitudeInDegrees = 5/oneDegreeLongitude;
+    const longitudeMin = coordsObject.longitude - fiveMilesLongitudeInDegrees;
+    const longitudeMax = coordsObject.longitude + fiveMilesLongitudeInDegrees;
+
+    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+  }
 
   Post.find(filter)
     .populate({
@@ -39,39 +58,6 @@ router.get('/:geo/:forum', (req, res, next) => {
     .populate('userId')
     .then(posts => {
       console.log('the posts are,', posts);
-      sortPostsChronologically(posts);
-      res.json(posts);
-    })
-    .catch(err => {
-      next(err);
-    });
-});
-
-router.get('/city/:geo', (req, res, next) => {
-  const coordsObject = JSON.parse(req.params.geo);
-
-  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-  const latitudeMin = coordsObject.latitude - 0.073155;
-  const latitudeMax = coordsObject.latitude + 0.073155;
-
-  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-  // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-  // one mile at the equator 0.01445713459592308804394968917161 degrees
-  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-  const fiveMilesLongitudeInDegrees = 5/oneDegreeLongitude;
-  const longitudeMin = coordsObject.longitude - fiveMilesLongitudeInDegrees;
-  const longitudeMax = coordsObject.longitude + fiveMilesLongitudeInDegrees;
-
-  const locationSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
-
-  Post.find(locationSearch)
-    .populate({
-      path: 'comments',
-      populate: { path: 'userId' }
-    })
-    .populate('userId')
-    .then(posts => {
       sortPostsChronologically(posts);
       res.json(posts);
     })
