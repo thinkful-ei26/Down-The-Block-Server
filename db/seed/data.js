@@ -4,28 +4,28 @@ const comments = [
   {
     _id: '333333333333333333333301',
     date: '2018-10-26',
-    content: 'Lolol, this is a funny comment',
+    content: 'Am I invited?',
     userId: '000000000000000000000002',
     postId: '222222222222222222222201'
   },
   {
     _id: '333333333333333333333302',
     date: '2017-11-26',
-    content: 'This is also a funny comment!',
+    content: 'Jk jk, have fun!',
     userId: '000000000000000000000002',
     postId: '222222222222222222222201',
   },
   {
     _id: '333333333333333333333303',
     date: '2019-01-26',
-    content: 'Oh No!',
+    content: 'Oh No! Hope everyone is okay!',
     userId: '000000000000000000000001',
     postId: '222222222222222222222202',
   },
   {
     _id: '333333333333333333333304',
     date: '2019-01-28',
-    content: 'Was anyone hurt?!',
+    content: 'Did they take a lot of valuable things? :(',
     userId: '000000000000000000000001',
     postId: '222222222222222222222202',
   }
@@ -38,7 +38,8 @@ const posts = [
     date: '2016-10-26',
     coordinates: {latitude: 34.155650699999995, longitude: -118.46158659999999},
     comments: ['333333333333333333333301', '333333333333333333333302'],
-    content: 'Throwing a party this sat night',
+    content: 'Throwing a party this sat night, apologize in advance for any noise! Please dont call the po-po',
+    audience: 'neighbors',
     userId: '000000000000000000000001'
   },
   {
@@ -47,7 +48,8 @@ const posts = [
     date: '2018-10-26',
     coordinates: {latitude: 34.155650699999995, longitude: -118.46158659999999},
     comments: ['333333333333333333333303', '333333333333333333333304'],
-    content: 'Robbery on east side of Noble. Be safe',
+    content: 'There was a robbery on east side of Noble last night. No one was home, but the robbers escaped before authorities arrived.',
+    audience: 'city',
     userId: '000000000000000000000002'
   }
 ];
@@ -72,11 +74,6 @@ const users = [
     username: 'steve',
     // hash for "password"
     password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi',
-    photo: { 
-      public_id: 'wnu7fkqcb2jd2ilai5q8',
-      url:
-     'https://res.cloudinary.com/dnn1jf0pl/image/upload/v1550532780/wnu7fkqcb2jd2ilai5q8.png' 
-    }
   }
 ];
 
