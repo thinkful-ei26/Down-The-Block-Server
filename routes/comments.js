@@ -4,6 +4,8 @@ const express = require('express');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
+
+const { socketIO, io, server, app } = require('../utils/socket');
 const moment = require('moment');
 
 const router = express.Router(); 
@@ -24,6 +26,7 @@ router.post('/', (req, res, next) => {
         .populate('userId');
     })
     .then(post => {
+      io.emit('new_comment', post);
       console.log('the result is', post);
       return res.status(201).location(`http://${req.headers.host}/posts/${post.id}`).json(post);
     })

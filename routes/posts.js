@@ -7,8 +7,16 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 const {sortPostsChronologically} = require ('../helper-functions');
-
+const { io, server, socketIO, app} = require('../utils/socket');
 const router = express.Router();
+
+
+
+// const app = express();
+// const http = require('http');
+// const socketIO = require('socket.io');
+// let server = http.createServer(app);
+// let io = socketIO(server);
 
 /* GET ALL POSTS */
 router.get('/:geo/:forum', (req, res, next) => {
@@ -59,7 +67,7 @@ router.get('/:geo/:forum', (req, res, next) => {
     .then(posts => {
       console.log('the posts are,', posts);
       sortPostsChronologically(posts);
-      res.json(posts);
+      return res.json(posts);
     })
     .catch(err => {
       next(err);
@@ -87,8 +95,18 @@ router.post('/:geo', (req, res, next) => {
   console.log(newPost);
   
   Post.create(newPost)
+
     .then((post)=>{
       console.log('here5');
+          return Post.findById(post._id)
+          .populate({
+            path: 'comments',
+            populate: { path: 'userId' }
+          })
+          .populate('userId')
+          })
+    .then(post => {
+      io.emit('new_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
