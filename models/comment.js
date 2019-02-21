@@ -7,7 +7,6 @@ const commentSchema = new mongoose.Schema({
   date: { type: String, required: true },
   postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true  },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  postId:{ type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true }
 });
 
 //// Customize output for `res.json(data)`, `console.log(data)` etc.

@@ -7,28 +7,58 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 const {sortPostsChronologically} = require ('../helper-functions');
-
+const { io, server, socketIO, app} = require('../utils/socket');
 const router = express.Router();
 
+
+
+// const app = express();
+// const http = require('http');
+// const socketIO = require('socket.io');
+// let server = http.createServer(app);
+// let io = socketIO(server);
+
 /* GET ALL POSTS */
-router.get('/:geo', (req, res, next) => {
+router.get('/:geo/:forum', (req, res, next) => {
   const coordsObject = JSON.parse(req.params.geo);
+  const forum = req.params.forum;
+  let filter;
 
-  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  const latitudeMin = coordsObject.latitude - 0.014631;
-  const latitudeMax = coordsObject.latitude + 0.014631;
+  if(forum==='neighbors'){
+    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
+    const latitudeMin = coordsObject.latitude - 0.014631;
+    const latitudeMax = coordsObject.latitude + 0.014631;
 
-  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion
-  // ONE MILE AT MY LAT(~34) IS EQUAL TO 0.017457206881313057 degrees
-  // ONE MILE AT THE EQUATOR IS EQUAL TO 0.01445713459592308804394968917161 DEGREES
-  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
-  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
+    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+    // one mile at the equator 0.01445713459592308804394968917161 degrees
+    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+    const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+    console.log(oneMileLongitudeInDegrees);
+    const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+    const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 
-  const locationSearch = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+  } 
+  else{
+    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
+    const latitudeMin = coordsObject.latitude - 0.073155;
+    const latitudeMax = coordsObject.latitude + 0.073155;
 
-  Post.find(locationSearch)
+    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+    // one mile at the equator 0.01445713459592308804394968917161 degrees
+    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+    const fiveMilesLongitudeInDegrees = 5/oneDegreeLongitude;
+    const longitudeMin = coordsObject.longitude - fiveMilesLongitudeInDegrees;
+    const longitudeMax = coordsObject.longitude + fiveMilesLongitudeInDegrees;
+
+    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+  }
+
+  Post.find(filter)
     .populate({
       path: 'comments',
       populate: { path: 'userId' }
@@ -37,7 +67,7 @@ router.get('/:geo', (req, res, next) => {
     .then(posts => {
       console.log('the posts are,', posts);
       sortPostsChronologically(posts);
-      res.json(posts);
+      return res.json(posts);
     })
     .catch(err => {
       next(err);
@@ -51,7 +81,7 @@ router.post('/:geo', (req, res, next) => {
   newPost.userId = userId;
   newPost.coordinates = JSON.parse(req.params.geo);
 
-  if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates){
+  if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
     const err = {
       message: 'Missing information for the post!',
@@ -65,8 +95,18 @@ router.post('/:geo', (req, res, next) => {
   console.log(newPost);
   
   Post.create(newPost)
+
     .then((post)=>{
       console.log('here5');
+          return Post.findById(post._id)
+          .populate({
+            path: 'comments',
+            populate: { path: 'userId' }
+          })
+          .populate('userId')
+          })
+    .then(post => {
+      io.emit('new_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
@@ -82,7 +122,7 @@ router.put('/:postId', (req, res, next) => {
   const userId = req.user.id;
   editedPost.userId = userId;
 
-  if(!editedPost.category || !editedPost.date || !editedPost.content){
+  if(!editedPost.category || !editedPost.date || !editedPost.content || !editedPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
     const err = {
       message: 'Missing information for the post!',
@@ -129,7 +169,6 @@ router.delete('/:postId', (req, res, next) => {
       next(err);
     });
 });
-
 
 module.exports = router;
 
