@@ -205,6 +205,7 @@ router.post('/', (req,res,next) => {
 
 /* UPDATE A USER'S BASIC INFO */
 router.put('/account', jwtAuth, (req,res,next) => {
+  console.log('HERE');
   const userId = req.user.id;
 
   //First do validation 
@@ -406,6 +407,34 @@ router.put('/password', jwtAuth, (req,res,next) => {
     .then(user => {
       console.log('USER IS', user);
       return res.json(user);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+/* UPDATE A USER'S PROFILE PHOTO */
+router.put('/photo', jwtAuth, (req,res,next) => {
+  console.log("IN PHOTO ROUTE")
+  const userId = req.user.id;
+  const file = Object.values(req.files);
+
+  cloudinary.uploader.upload(file[0].path)
+    .then(results => {
+      console.log('RESULTS from cloudinary:', results);
+      let photo = {
+        public_id: results.public_id,
+        url: results.secure_url,
+      };
+      return photo;
+    })
+    .then(photo=>{
+      return User.findOneAndUpdate({_id: userId}, {photo}, {new: true});
+    })
+    .then(user => {
+      console.log('4. USER IS', user);
+      // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
+      return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
     })
     .catch(err => {
       next(err);
