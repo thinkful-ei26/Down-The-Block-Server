@@ -428,7 +428,7 @@ router.put('/password', jwtAuth, (req,res,next) => {
 
 /* UPDATE A USER'S PROFILE PHOTO */
 router.put('/photo', jwtAuth, (req,res,next) => {
-  console.log("IN PHOTO ROUTE")
+  console.log('IN PHOTO ROUTE');
   const userId = req.user.id;
   const file = Object.values(req.files);
 
@@ -453,5 +453,51 @@ router.put('/photo', jwtAuth, (req,res,next) => {
       next(err);
     });
 });
+
+/* UPDATE A USER'S COORDS */
+router.put('/location/:coords', jwtAuth, (req,res,next) => {
+  const userId = req.user.id;
+  const coordinates = JSON.parse(req.params.coords);
+
+  User.findOneAndUpdate({_id: userId}, {coordinates}, {new: true})
+    .then(user => {
+      // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
+      return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+/* GET ALL USERS WITHIN ONE MILE RADIUS OF CURRENT USER */
+router.get('/:coords', jwtAuth, (req,res,next) => {
+  const coordsObject = JSON.parse(req.params.coords);
+  let filter; 
+
+  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
+  const latitudeMin = coordsObject.latitude - 0.014631;
+  const latitudeMax = coordsObject.latitude + 0.014631;
+
+  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+  // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+  // one mile at the equator 0.01445713459592308804394968917161 degrees
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+  console.log(oneMileLongitudeInDegrees);
+  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
+
+  filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+
+  User.find(filter)
+    .then(users => {
+      res.json(users);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
 
 module.exports = router;
