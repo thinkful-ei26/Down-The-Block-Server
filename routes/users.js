@@ -459,6 +459,9 @@ router.put('/location/:coords', jwtAuth, (req,res,next) => {
 /* GET ALL USERS WITHIN ONE MILE RADIUS OF CURRENT USER */
 router.get('/:coords', jwtAuth, (req,res,next) => {
   const coordsObject = JSON.parse(req.params.coords);
+  const userId = req.user.id;
+
+  console.log('COORDS OBJ IN USERS', coordsObject);
   let filter; 
 
   // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
@@ -475,10 +478,11 @@ router.get('/:coords', jwtAuth, (req,res,next) => {
   const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
   const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 
-  filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}};
+  filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, _id: {$nin: userId}};
 
   User.find(filter)
     .then(users => {
+      console.log('IN USERS');
       res.json(users);
     })
     .catch(err => {
