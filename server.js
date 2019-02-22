@@ -16,7 +16,7 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
-const {socketIO, io, server, app } = require('./utils/socket'); 
+const {io, server, app } = require('./utils/socket'); 
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME, 
