@@ -155,7 +155,7 @@ router.delete('/:postId', (req, res, next) => {
         return next();
       }
       else{
-        io.emit('delete_post', post);
+        io.emit('delete_post', post[0]);
         res.sendStatus(204);
       }
     })
