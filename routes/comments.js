@@ -5,7 +5,7 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 
-const { socketIO, io, server, app } = require('../utils/socket');
+const { io } = require('../utils/socket');
 const moment = require('moment');
 
 const router = express.Router(); 
@@ -31,27 +31,54 @@ router.post('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/*EDIT A COMMENT*/
+router.put('/:postId/:commentId', (req, res, next) => {
+  const { commentId, postId } = req.params;
+  const userId = req.user.id;
+  const editedComment = req.body;
+
+  Comment.findOneAndUpdate({_id: commentId, userId}, editedComment, {new: true})
+    .then(comment=>{
+      return Post.findById (postId)
+        .populate({
+          path: 'comments',
+          populate: { path: 'userId' }
+        })
+        .populate('userId');
+    })
+    .then((post) => {
+      io.emit('edit_comment', post); 
+      res.sendStatus(200);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
 /* DELETE A COMMENT */
-router.delete('/:commentId', (req, res, next) => {
-  const { commentId } = req.params;
+router.delete('/:postId/:commentId', (req, res, next) => {
+  const { commentId, postId } = req.params;
   const userId = req.user.id;
   const commentDeletePromise =  Comment.findOneAndDelete({_id:commentId, userId});
 
-  return Promise.all([commentDeletePromise])
-    .then((comment) => {
+  console.log('DELETING COMMENT', postId, commentId, userId);
+  //also remove comment from the post's comments array
+  const postCommentPullPromise = Post.findOneAndUpdate({_id: postId, userId}, { $pull: { comments: commentId } }, {new: true});
+
+  return Promise.all([commentDeletePromise, postCommentPullPromise])
+    .then((comment, post) => {
       if(!comment){
         // if trying to delete something that no longer exists or never did
         return next();
       }
       else{
-        console.log('COMMENT BEING DELETED',comment)
-        // io.emit('delete_comment', comment);
-        return Post.findById(comment[0].postId)
+        console.log('COMMENT BEING DELETED', comment[0]);
+        return Post.findById(postId)
           .populate({
             path: 'comments',
             populate: { path: 'userId' }
           })
-          .populate('userId')
+          .populate('userId');
       }
     })
     .then((post) => {
@@ -59,9 +86,9 @@ router.delete('/:commentId', (req, res, next) => {
       io.emit('delete_comment', post); 
       res.sendStatus(204);
     })
-  .catch(err => {
-    next(err);
-  });
+    .catch(err => {
+      next(err);
+    });
 });
 
 module.exports = router;
