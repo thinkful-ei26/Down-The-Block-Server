@@ -7,16 +7,8 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 const {sortPostsChronologically} = require ('../helper-functions');
-const { io, server, socketIO, app} = require('../utils/socket');
+const { io } = require('../utils/socket');
 const router = express.Router();
-
-
-
-// const app = express();
-// const http = require('http');
-// const socketIO = require('socket.io');
-// let server = http.createServer(app);
-// let io = socketIO(server);
 
 /* GET ALL POSTS */
 router.get('/:geo/:forum', (req, res, next) => {
@@ -65,7 +57,6 @@ router.get('/:geo/:forum', (req, res, next) => {
     })
     .populate('userId')
     .then(posts => {
-      console.log('the posts are,', posts);
       sortPostsChronologically(posts);
       return res.json(posts);
     })
@@ -91,26 +82,21 @@ router.post('/:geo', (req, res, next) => {
     };
     return next(err);
   }
-
-  console.log(newPost);
   
   Post.create(newPost)
-
     .then((post)=>{
-      console.log('here5');
-          return Post.findById(post._id)
-          .populate({
-            path: 'comments',
-            populate: { path: 'userId' }
-          })
-          .populate('userId')
-          })
+      return Post.findById(post._id)
+        .populate({
+          path: 'comments',
+          populate: { path: 'userId' }
+        })
+        .populate('userId');
+    })
     .then(post => {
       io.emit('new_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
-      console.log('here6');
       next(err);
     });
 });
@@ -136,10 +122,17 @@ router.put('/:postId', (req, res, next) => {
   //check if user is authorized to update this post
   Post.find({_id: postId, userId})
     .then(()=>{
-      return Post.findOneAndUpdate({_id: postId, userId: userId}, {category: editedPost.category, content: editedPost.content}, {new: true}).populate('comments');
+      return Post.findOneAndUpdate({_id: postId, userId: userId}, {category: editedPost.category, content: editedPost.content}, {new: true})
+        .populate({
+          path: 'comments',
+          populate: { path: 'userId' }
+        })
+        .populate('userId');
     })
     .then((post) => {
-      res.status(200).json(post);
+      console.log('EDITED POST BEING SENT BAC', post);
+      io.emit('edited_post', post);
+      res.status(200);
     })
     .catch(err => {
       next(err);

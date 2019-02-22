@@ -13,7 +13,6 @@ const router = express.Router();
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const { content, postId, userId, date } = req.body;
-  console.log('the userID is', userId);
   const newComment = { content, userId, date, postId };
 
   Comment.create(newComment)
@@ -27,7 +26,6 @@ router.post('/', (req, res, next) => {
     })
     .then(post => {
       io.emit('new_comment', post);
-      console.log('the result is', post);
       return res.status(201).location(`http://${req.headers.host}/posts/${post.id}`).json(post);
     })
     .catch(err => next(err));
