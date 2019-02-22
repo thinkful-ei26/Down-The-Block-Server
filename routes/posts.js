@@ -48,17 +48,17 @@ router.post('/:geo/:forum', (req, res, next) => {
   let coordinates = JSON.parse(req.params.geo);
   newPost.coordinates = coordinates;
 
-  const forum = req.params.forum;
-  let filter;
+  // const forum = req.params.forum;
+  // let filter;
 
-  if(forum==='neighbors'){
-    filter = calculateGeoFilterNeighbors(coordinates);
-    filter.audience = forum;
-  } 
-  else{
-    filter = calculateGeoFilterCity(coordinates);
-    filter.audience = forum;
-  }
+  // if(forum==='neighbors'){
+  //   filter = calculateGeoFilterNeighbors(coordinates);
+  //   filter.audience = forum;
+  // } 
+  // else{
+  //   filter = calculateGeoFilterCity(coordinates);
+  //   filter.audience = forum;
+  // }
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -73,9 +73,9 @@ router.post('/:geo/:forum', (req, res, next) => {
   
   Post.create(newPost)
     .then((post)=>{
-      filter._id = post._id;
-      console.log('THE FILTER IS', filter);
-      return Post.findOne(filter)
+      // filter._id = post._id;
+      // console.log('THE FILTER IS', filter);
+      return Post.findById(post._id)
         .populate({
           path: 'comments',
           populate: { path: 'userId' }
@@ -142,10 +142,12 @@ router.delete('/:postId', (req, res, next) => {
   return Promise.all([postDeletePromise, commentsDeletePromise])
     .then((post) => {
       if(!post){
+        console.log('here1')
         // if trying to delete something that no longer exists or never did
         return next();
       }
       else{
+        console.log('here2')
         io.emit('delete_post', post[0]);
         res.sendStatus(204);
       }
