@@ -24,12 +24,6 @@ cloudinary.config({
   api_secret: process.env.API_SECRET
 });
 
-// const app = express();
-// const http = require('http');
-// const socketIO = require('socket.io');
-// let server = http.createServer(app);
-// let io = socketIO(server);
-
 app.get('/chat', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
@@ -66,9 +60,9 @@ const localAuth = passport.authenticate('local', options);
 
 app.use('/posts', jwtAuth, postsRouter);
 app.use('/comments', jwtAuth, commentsRouter);
-app.use('/auth/users', usersRouter);
-app.use('/auth/login', localAuth, authRouter); //for login
-app.use('/auth', jwtAuth, authRouter); //for refresh
+app.use('/users', usersRouter);
+// app.use('/auth/login', localAuth, authRouter); //for login
+app.use('/auth', authRouter); //for refresh
 //Any endpoint that passes the jwtAuth strategy and is validted: The `req.user` has a value now because of `done(null, payload.user)` in JWT Strategy
 
 // Custom 404 Not Found route handler

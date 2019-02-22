@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
-const {sortPostsChronologically} = require ('../helper-functions');
+const {sortPostsChronologically, calculateGeoFilterNeighbors, calculateGeoFilterCity} = require ('../helper-functions');
 const { io } = require('../utils/socket');
 const router = express.Router();
 
@@ -17,37 +17,12 @@ router.get('/:geo/:forum', (req, res, next) => {
   let filter;
 
   if(forum==='neighbors'){
-    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-    const latitudeMin = coordsObject.latitude - 0.014631;
-    const latitudeMax = coordsObject.latitude + 0.014631;
-
-    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-    // one mile at the equator 0.01445713459592308804394968917161 degrees
-    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-    const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-    console.log(oneMileLongitudeInDegrees);
-    const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
-    const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
-
-    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+    filter = calculateGeoFilterNeighbors(coordsObject);
+    filter.audience = forum;
   } 
   else{
-    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-    const latitudeMin = coordsObject.latitude - 0.073155;
-    const latitudeMax = coordsObject.latitude + 0.073155;
-
-    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-    // one mile at the equator 0.01445713459592308804394968917161 degrees
-    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-    const fiveMilesLongitudeInDegrees = 5/oneDegreeLongitude;
-    const longitudeMin = coordsObject.longitude - fiveMilesLongitudeInDegrees;
-    const longitudeMax = coordsObject.longitude + fiveMilesLongitudeInDegrees;
-
-    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+    filter = calculateGeoFilterCity(coordsObject);
+    filter.audience = forum;
   }
 
   Post.find(filter)
@@ -65,12 +40,25 @@ router.get('/:geo/:forum', (req, res, next) => {
     });
 });
 
-/*CREATE A POST*/
-router.post('/:geo', (req, res, next) => {
+/*CREATE A POST IN REAL TIME (only send back if within geo, otherwise send back no post) */
+router.post('/:geo/:forum', (req, res, next) => {
   const newPost = req.body;
   const userId = req.user.id;
   newPost.userId = userId;
-  newPost.coordinates = JSON.parse(req.params.geo);
+  let coordinates = JSON.parse(req.params.geo);
+  newPost.coordinates = coordinates;
+
+  const forum = req.params.forum;
+  let filter;
+
+  if(forum==='neighbors'){
+    filter = calculateGeoFilterNeighbors(coordinates);
+    filter.audience = forum;
+  } 
+  else{
+    filter = calculateGeoFilterCity(coordinates);
+    filter.audience = forum;
+  }
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -85,7 +73,9 @@ router.post('/:geo', (req, res, next) => {
   
   Post.create(newPost)
     .then((post)=>{
-      return Post.findById(post._id)
+      filter._id = post._id;
+      console.log('THE FILTER IS', filter);
+      return Post.findOne(filter)
         .populate({
           path: 'comments',
           populate: { path: 'userId' }
@@ -93,6 +83,7 @@ router.post('/:geo', (req, res, next) => {
         .populate('userId');
     })
     .then(post => {
+      console.log('THE POST BEING SENT BACK IS', post);
       io.emit('new_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
