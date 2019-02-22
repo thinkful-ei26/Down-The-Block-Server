@@ -16,11 +16,11 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
-const {socketIO, io, server, app } = require('./utils/socket'); 
+const {socketIO, io, server, app } = require('./utils/socket');
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET
 });
 
@@ -39,6 +39,13 @@ io.on('connection', function(socket){
     io.emit('chat-message', msg);
   });
 });
+
+// TRY TO USE NAMESPACEING DIDNT WORK
+// let nsp = io.of('/nsp');
+// nsp.on('connection', function(socket){
+//   console.log("someones connected")
+//   });
+//   nsp.emit('hi', "everyone!");
 
 app.use(
   cors({
