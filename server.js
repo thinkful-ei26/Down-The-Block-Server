@@ -16,6 +16,7 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
+const {socketIO, io, server, app } = require('./utils/socket'); 
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME, 
@@ -23,11 +24,11 @@ cloudinary.config({
   api_secret: process.env.API_SECRET
 });
 
-const app = express();
-const http = require('http');
-const socketIO = require('socket.io');
-let server = http.createServer(app);
-let io = socketIO(server);
+// const app = express();
+// const http = require('http');
+// const socketIO = require('socket.io');
+// let server = http.createServer(app);
+// let io = socketIO(server);
 
 app.get('/chat', function(req, res){
   res.sendFile(__dirname + '/index.html');
