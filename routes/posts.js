@@ -48,18 +48,6 @@ router.post('/:geo/:forum', (req, res, next) => {
   let coordinates = JSON.parse(req.params.geo);
   newPost.coordinates = coordinates;
 
-  // const forum = req.params.forum;
-  // let filter;
-
-  // if(forum==='neighbors'){
-  //   filter = calculateGeoFilterNeighbors(coordinates);
-  //   filter.audience = forum;
-  // } 
-  // else{
-  //   filter = calculateGeoFilterCity(coordinates);
-  //   filter.audience = forum;
-  // }
-
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
     const err = {
