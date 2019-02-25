@@ -16,11 +16,11 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
-const {socketIO, io, server, app } = require('./utils/socket'); 
+const {socketIO, io, server, app } = require('./utils/socket');
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET
 });
 
@@ -38,7 +38,23 @@ io.on('connection', function(socket){
   socket.on('chat-message', function(msg){
     io.emit('chat-message', msg);
   });
+
+  socket.on('COMMUNITY_CHAT',function(msg){
+    // check the coordinates
+    socket.emit('COMMUNITY_CHAT', msg)
+  })
+
+  socket.on('TYPING', function(msg) {
+    socket.emit('TYPING', msg)
+  })
+
+  socket.on('PRIVATE_MESSAGE', function(msg){
+    // reciever, sender:user.name, activeChat
+    socket.emit('PRIVATE_MESSAGE', msg)
+  });
+
 });
+
 
 app.use(
   cors({
