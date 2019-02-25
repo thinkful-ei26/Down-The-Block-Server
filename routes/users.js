@@ -68,14 +68,14 @@ router.get('/', (req, res, next)=>{
     });
 
     res.send(userMap);
-  })
+  });
   //get all users
-})
+});
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
   //First do validation (dont trust client)
-  const requiredFields = ['username', 'password', 'firstName', 'lastName'];
+  const requiredFields = ['registerUsername', 'password', 'firstName', 'lastName'];
 
   let missing= missingField(requiredFields, req.body);
 
@@ -89,7 +89,7 @@ router.post('/', (req,res,next) => {
     return next(err);
   }
 
-  const stringFields = ['username', 'password', 'firstName', 'lastName'];
+  const stringFields = ['registerUsername', 'password', 'firstName', 'lastName'];
   let notString= nonStringField(stringFields, req.body);
 
   if (notString) {
@@ -104,7 +104,7 @@ router.post('/', (req,res,next) => {
 
   // If the username and password aren't trimmed we give an error.  Users might expect that these will work without trimming. We need to reject such values explicitly so the users know what's happening, rather than silently trimming them and expecting the user to understand.
   // We'll silently trim the other fields, because they aren't credentials used to log in, so it's less of a problem. QUESTION: where do we actually do
-  const explicityTrimmedFields = ['username', 'password'];
+  const explicityTrimmedFields = ['registerUsername', 'password'];
   let notTrimmed = nonTrimmedField(explicityTrimmedFields, req.body);
 
   if (notTrimmed) {
@@ -118,7 +118,7 @@ router.post('/', (req,res,next) => {
   }
 
   const sizedFields = {
-    username: {
+    registerUsername: {
       min: 1
     },
     password: {
@@ -148,7 +148,7 @@ router.post('/', (req,res,next) => {
   }
 
   // // Username and password were validated as pre-trimmed, but we should trim the first and last name
-  let {firstName, lastName, username, password} = req.body;
+  let {firstName, lastName, registerUsername, password} = req.body;
   firstName = firstName.trim();
   lastName = lastName.trim();
 
@@ -161,9 +161,9 @@ router.post('/', (req,res,next) => {
 
   User.hashPassword(password)
     .then(digest => {
-      console.log('1. CREATING USER WITH INFO', username,digest,firstName,lastName,photo);
+      console.log('1. CREATING USER WITH INFO', registerUsername,digest,firstName,lastName,photo);
       const newUser = {
-        username,
+        username: registerUsername,
         password: digest,
         firstName,
         lastName,
@@ -191,7 +191,7 @@ router.post('/', (req,res,next) => {
           public_id: results.public_id,
           url: results.secure_url,
         };
-        return User.findOneAndUpdate({username: currentUser.username}, {photo: photo}, {new: true} );
+        return User.findOneAndUpdate({registerUsername: currentUser.registerUsername}, {photo: photo}, {new: true} );
       }
       else{
         console.log('3. NO RESULTS:');
@@ -208,7 +208,7 @@ router.post('/', (req,res,next) => {
         err = {
           message: 'The username already exists',
           reason: 'ValidationError',
-          location: 'username',
+          location: 'registerUsername',
           status: 422
         };
       }
