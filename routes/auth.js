@@ -34,24 +34,25 @@ router.post('/login', localAuth, (req, res) => {
 });
 
 router.post('/refresh', jwtAuth, (req, res) => {
-  console.log('IN REFRESH ENDPOINT, USER IS', req.user)
   const authToken = createAuthToken(req.user);
-  console.log('IN REFRESH ENDPOINT, TOKEN IS', authToken)
   res.json({ authToken });
 });
 
 //this creates a new token 
-// router.post('/refresh-profile', (req, res, next) => {
-//   const userId = req.user.id;
+router.post('/refresh-profile', (req, res, next) => {
+  console.log('HERE', req.user)
+  const userId = req.user.id;
+  console.log('IN REFRESH ENDPOINT, USER IS', userId)
 
-//   User.findById({_id: userId})
-//     .then(user=>{
-//       const authToken = createAuthToken(user);
-//       res.json({ authToken });
-//     })
-//     .catch(err=>{
-//       next(err);
-//     });
-// });
+  User.findById({_id: userId})
+    .then(user=>{
+      const authToken = createAuthToken(user);
+      console.log('IN REFRESH ENDPOINT, AUTH TOKEN IS IS', authToken)
+      res.json({ authToken });
+    })
+    .catch(err=>{
+      next(err);
+    });
+});
 
 module.exports = router;
