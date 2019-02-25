@@ -2,13 +2,16 @@
 
 const express = require('express');
 const mongoose = require('mongoose');
-
+const cloudinary = require('cloudinary');
+const formData = require('express-form-data');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
-const {sortPostsChronologically, calculateGeoFilterNeighbors, calculateGeoFilterCity} = require ('../helper-functions');
+const {sortPostsChronologically, calculateGeoFilterNeighbors, calculateGeoFilterCity, isEmpty} = require ('../helper-functions');
 const { io } = require('../utils/socket');
 const router = express.Router();
+router.use(formData.parse());
+
 
 /* GET ALL POSTS */
 router.get('/:geo/:forum', (req, res, next) => {
@@ -47,6 +50,7 @@ router.post('/:geo/:forum', (req, res, next) => {
   newPost.userId = userId;
   let coordinates = JSON.parse(req.params.geo);
   newPost.coordinates = coordinates;
+  let photo, post; 
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -60,15 +64,42 @@ router.post('/:geo/:forum', (req, res, next) => {
   }
   
   Post.create(newPost)
-    .then((post)=>{
-      // filter._id = post._id;
-      // console.log('THE FILTER IS', filter);
-      return Post.findById(post._id)
-        .populate({
-          path: 'comments',
-          populate: { path: 'userId' }
-        })
-        .populate('userId');
+    .then(newPost=> {
+      post = newPost;
+      if(!isEmpty(req.files)){
+        console.log('2. UPLOADING TO CLOUDINARY');
+        photo = Object.values(req.files);
+        // first upload the image to cloudinary
+        return cloudinary.uploader.upload(photo[0].path);
+      }
+      else{
+        console.log('2. NOT UPLOADING TO CLOUDINARY');
+        return null;
+      }
+    })
+    .then(results => {
+      if(results){
+        console.log('3. CLOUDINARY RESULTS:', results);
+        photo = {
+          public_id: results.public_id,
+          url: results.secure_url,
+        };
+        return Post.findOneAndUpdate({_id: post._id}, {photo: photo}, {new: true} )
+          .populate({
+            path: 'comments',
+            populate: { path: 'userId' }
+          })
+          .populate('userId');
+      }
+      else{
+        console.log('3. NO RESULTS:');
+        return Post.findById(post._id)
+          .populate({
+            path: 'comments',
+            populate: { path: 'userId' }
+          })
+          .populate('userId');
+      }
     })
     .then(post => {
       console.log('THE POST BEING SENT BACK IS', post);
@@ -130,12 +161,12 @@ router.delete('/:postId', (req, res, next) => {
   return Promise.all([postDeletePromise, commentsDeletePromise])
     .then((post) => {
       if(!post){
-        console.log('here1')
+        console.log('here1');
         // if trying to delete something that no longer exists or never did
         return next();
       }
       else{
-        console.log('here2')
+        console.log('here2');
         io.emit('delete_post', post[0]);
         res.sendStatus(204);
       }
