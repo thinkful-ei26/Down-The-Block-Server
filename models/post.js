@@ -7,7 +7,7 @@ const postSchema = new mongoose.Schema({
   date: { type: String, required: true },
   content: { type: String, required: true },
   coordinates: { type: Object, required: true },
-  image: { type: String },
+  photo: { type: Object },
   comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comment'}],
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   audience: { type: String, required: true }
