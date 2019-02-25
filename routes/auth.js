@@ -39,7 +39,7 @@ router.post('/refresh', jwtAuth, (req, res) => {
 });
 
 //this creates a new token 
-router.post('/refresh-profile', (req, res, next) => {
+router.post('/refresh-profile', jwtAuth, (req, res, next) => {
   console.log('HERE', req.user)
   const userId = req.user.id;
   console.log('IN REFRESH ENDPOINT, USER IS', userId)
