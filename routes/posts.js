@@ -2,13 +2,16 @@
 
 const express = require('express');
 const mongoose = require('mongoose');
-
+const cloudinary = require('cloudinary');
+const formData = require('express-form-data');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
-const {sortPostsChronologically} = require ('../helper-functions');
-
+const {sortPostsChronologically, calculateGeoFilterNeighbors, calculateGeoFilterCity, isEmpty} = require ('../helper-functions');
+const { io } = require('../utils/socket');
 const router = express.Router();
+router.use(formData.parse());
+
 
 /* GET ALL POSTS */
 router.get('/:geo/:forum', (req, res, next) => {
@@ -17,37 +20,12 @@ router.get('/:geo/:forum', (req, res, next) => {
   let filter;
 
   if(forum==='neighbors'){
-    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-    const latitudeMin = coordsObject.latitude - 0.014631;
-    const latitudeMax = coordsObject.latitude + 0.014631;
-
-    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-    // one mile at the equator 0.01445713459592308804394968917161 degrees
-    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-    const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-    console.log(oneMileLongitudeInDegrees);
-    const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
-    const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
-
-    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+    filter = calculateGeoFilterNeighbors(coordsObject);
+    filter.audience = forum;
   } 
   else{
-    // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-    const latitudeMin = coordsObject.latitude - 0.073155;
-    const latitudeMax = coordsObject.latitude + 0.073155;
-
-    // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-    // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-    // one mile at the equator 0.01445713459592308804394968917161 degrees
-    const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-    const fiveMilesLongitudeInDegrees = 5/oneDegreeLongitude;
-    const longitudeMin = coordsObject.longitude - fiveMilesLongitudeInDegrees;
-    const longitudeMax = coordsObject.longitude + fiveMilesLongitudeInDegrees;
-
-    filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, audience: forum};
+    filter = calculateGeoFilterCity(coordsObject);
+    filter.audience = forum;
   }
 
   Post.find(filter)
@@ -57,21 +35,22 @@ router.get('/:geo/:forum', (req, res, next) => {
     })
     .populate('userId')
     .then(posts => {
-      console.log('the posts are,', posts);
       sortPostsChronologically(posts);
-      res.json(posts);
+      return res.json(posts);
     })
     .catch(err => {
       next(err);
     });
 });
 
-/*CREATE A POST*/
-router.post('/:geo', (req, res, next) => {
+/*CREATE A POST IN REAL TIME (only send back if within geo, otherwise send back no post) */
+router.post('/:geo/:forum', (req, res, next) => {
   const newPost = req.body;
   const userId = req.user.id;
   newPost.userId = userId;
-  newPost.coordinates = JSON.parse(req.params.geo);
+  let coordinates = JSON.parse(req.params.geo);
+  newPost.coordinates = coordinates;
+  let photo, post; 
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -83,16 +62,51 @@ router.post('/:geo', (req, res, next) => {
     };
     return next(err);
   }
-
-  console.log(newPost);
   
   Post.create(newPost)
-    .then((post)=>{
-      console.log('here5');
+    .then(newPost=> {
+      post = newPost;
+      if(!isEmpty(req.files)){
+        console.log('2. UPLOADING TO CLOUDINARY');
+        photo = Object.values(req.files);
+        // first upload the image to cloudinary
+        return cloudinary.uploader.upload(photo[0].path);
+      }
+      else{
+        console.log('2. NOT UPLOADING TO CLOUDINARY');
+        return null;
+      }
+    })
+    .then(results => {
+      if(results){
+        console.log('3. CLOUDINARY RESULTS:', results);
+        photo = {
+          public_id: results.public_id,
+          url: results.secure_url,
+        };
+        return Post.findOneAndUpdate({_id: post._id}, {photo: photo}, {new: true} )
+          .populate({
+            path: 'comments',
+            populate: { path: 'userId' }
+          })
+          .populate('userId');
+      }
+      else{
+        console.log('3. NO RESULTS:');
+        return Post.findById(post._id)
+          .populate({
+            path: 'comments',
+            populate: { path: 'userId' }
+          })
+          .populate('userId');
+      }
+    })
+    .then(post => {
+      console.log('THE POST BEING SENT BACK IS', post);
+      io.emit('new_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
-      console.log('here6');
       next(err);
     });
 });
@@ -118,10 +132,17 @@ router.put('/:postId', (req, res, next) => {
   //check if user is authorized to update this post
   Post.find({_id: postId, userId})
     .then(()=>{
-      return Post.findOneAndUpdate({_id: postId, userId: userId}, {category: editedPost.category, content: editedPost.content}, {new: true}).populate('comments');
+      return Post.findOneAndUpdate({_id: postId, userId: userId}, {category: editedPost.category, content: editedPost.content}, {new: true})
+        .populate({
+          path: 'comments',
+          populate: { path: 'userId' }
+        })
+        .populate('userId');
     })
     .then((post) => {
-      res.status(200).json(post);
+      console.log('EDITED POST BEING SENT BAC', post);
+      io.emit('edited_post', post);
+      res.status(200);
     })
     .catch(err => {
       next(err);
@@ -140,10 +161,13 @@ router.delete('/:postId', (req, res, next) => {
   return Promise.all([postDeletePromise, commentsDeletePromise])
     .then((post) => {
       if(!post){
+        console.log('here1');
         // if trying to delete something that no longer exists or never did
         return next();
       }
       else{
+        console.log('here2');
+        io.emit('delete_post', post[0]);
         res.sendStatus(204);
       }
     })

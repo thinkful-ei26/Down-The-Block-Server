@@ -58,6 +58,19 @@ function tooLargeField(sizedFields, body){
 function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+//Get A list of all users
+router.get('/', (req, res, next)=>{
+  User.find({}, function(err, users) {
+    let userMap = {};
+
+    users.forEach(function(user) {
+      userMap[user._id] = user;
+    });
+
+    res.send(userMap);
+  });
+  //get all users
+});
 
 //Get A list of all users
 router.get('/', (req, res, next)=>{
@@ -76,7 +89,7 @@ router.get('/', (req, res, next)=>{
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
   //First do validation (dont trust client)
-  const requiredFields = ['username', 'password', 'firstName', 'lastName'];
+  const requiredFields = ['registerUsername', 'password', 'firstName', 'lastName'];
 
   let missing= missingField(requiredFields, req.body);
 
@@ -90,7 +103,7 @@ router.post('/', (req,res,next) => {
     return next(err);
   }
 
-  const stringFields = ['username', 'password', 'firstName', 'lastName'];
+  const stringFields = ['registerUsername', 'password', 'firstName', 'lastName'];
   let notString= nonStringField(stringFields, req.body);
 
   if (notString) {
@@ -105,7 +118,7 @@ router.post('/', (req,res,next) => {
 
   // If the username and password aren't trimmed we give an error.  Users might expect that these will work without trimming. We need to reject such values explicitly so the users know what's happening, rather than silently trimming them and expecting the user to understand.
   // We'll silently trim the other fields, because they aren't credentials used to log in, so it's less of a problem. QUESTION: where do we actually do
-  const explicityTrimmedFields = ['username', 'password'];
+  const explicityTrimmedFields = ['registerUsername', 'password'];
   let notTrimmed = nonTrimmedField(explicityTrimmedFields, req.body);
 
   if (notTrimmed) {
@@ -119,7 +132,7 @@ router.post('/', (req,res,next) => {
   }
 
   const sizedFields = {
-    username: {
+    registerUsername: {
       min: 1
     },
     password: {
@@ -149,7 +162,7 @@ router.post('/', (req,res,next) => {
   }
 
   // // Username and password were validated as pre-trimmed, but we should trim the first and last name
-  let {firstName, lastName, username, password} = req.body;
+  let {firstName, lastName, registerUsername, password} = req.body;
   firstName = firstName.trim();
   lastName = lastName.trim();
 
@@ -162,9 +175,9 @@ router.post('/', (req,res,next) => {
 
   User.hashPassword(password)
     .then(digest => {
-      console.log('1. CREATING USER WITH INFO', username,digest,firstName,lastName,photo);
+      console.log('1. CREATING USER WITH INFO', registerUsername,digest,firstName,lastName,photo);
       const newUser = {
-        username,
+        username: registerUsername,
         password: digest,
         firstName,
         lastName,
@@ -192,7 +205,7 @@ router.post('/', (req,res,next) => {
           public_id: results.public_id,
           url: results.secure_url,
         };
-        return User.findOneAndUpdate({username: currentUser.username}, {photo: photo}, {new: true} );
+        return User.findOneAndUpdate({registerUsername: currentUser.registerUsername}, {photo: photo}, {new: true} );
       }
       else{
         console.log('3. NO RESULTS:');
@@ -209,7 +222,7 @@ router.post('/', (req,res,next) => {
         err = {
           message: 'The username already exists',
           reason: 'ValidationError',
-          location: 'username',
+          location: 'registerUsername',
           status: 422
         };
       }
@@ -219,6 +232,7 @@ router.post('/', (req,res,next) => {
 
 /* UPDATE A USER'S BASIC INFO */
 router.put('/account', jwtAuth, (req,res,next) => {
+  console.log('HERE');
   const userId = req.user.id;
 
   //First do validation
@@ -425,5 +439,83 @@ router.put('/password', jwtAuth, (req,res,next) => {
       next(err);
     });
 });
+
+/* UPDATE A USER'S PROFILE PHOTO */
+router.put('/photo', jwtAuth, (req,res,next) => {
+  console.log('IN PHOTO ROUTE');
+  const userId = req.user.id;
+  const file = Object.values(req.files);
+
+  cloudinary.uploader.upload(file[0].path)
+    .then(results => {
+      console.log('RESULTS from cloudinary:', results);
+      let photo = {
+        public_id: results.public_id,
+        url: results.secure_url,
+      };
+      return photo;
+    })
+    .then(photo=>{
+      return User.findOneAndUpdate({_id: userId}, {photo}, {new: true});
+    })
+    .then(user => {
+      console.log('4. USER IS', user);
+      // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
+      return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+/* UPDATE A USER'S COORDS */
+router.put('/location/:coords', jwtAuth, (req,res,next) => {
+  const userId = req.user.id;
+  const coordinates = JSON.parse(req.params.coords);
+
+  User.findOneAndUpdate({_id: userId}, {coordinates}, {new: true})
+    .then(user => {
+      // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
+      return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+/* GET ALL USERS WITHIN ONE MILE RADIUS OF CURRENT USER */
+router.get('/:coords', jwtAuth, (req,res,next) => {
+  const coordsObject = JSON.parse(req.params.coords);
+  const userId = req.user.id;
+
+  console.log('COORDS OBJ IN USERS', coordsObject);
+  let filter; 
+
+  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
+  const latitudeMin = coordsObject.latitude - 0.014631;
+  const latitudeMax = coordsObject.latitude + 0.014631;
+
+  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+  // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+  // one mile at the equator 0.01445713459592308804394968917161 degrees
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+  console.log(oneMileLongitudeInDegrees);
+  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
+
+  filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, _id: {$nin: userId}};
+
+  User.find(filter)
+    .then(users => {
+      console.log('IN USERS');
+      res.json(users);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
 
 module.exports = router;

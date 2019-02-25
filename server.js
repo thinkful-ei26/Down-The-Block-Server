@@ -16,18 +16,13 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
+const {io, server, app } = require('./utils/socket'); 
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET
 });
-
-const app = express();
-const http = require('http');
-const socketIO = require('socket.io');
-let server = http.createServer(app);
-let io = socketIO(server);
 
 app.get('/chat', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -38,6 +33,13 @@ io.on('connection', function(socket){
     io.emit('chat-message', msg);
   });
 });
+
+// TRY TO USE NAMESPACEING DIDNT WORK
+// let nsp = io.of('/nsp');
+// nsp.on('connection', function(socket){
+//   console.log("someones connected")
+//   });
+//   nsp.emit('hi', "everyone!");
 
 app.use(
   cors({
@@ -65,9 +67,9 @@ const localAuth = passport.authenticate('local', options);
 
 app.use('/posts', jwtAuth, postsRouter);
 app.use('/comments', jwtAuth, commentsRouter);
-app.use('/auth/users', usersRouter);
-app.use('/auth/login', localAuth, authRouter); //for login
-app.use('/auth', jwtAuth, authRouter); //for refresh
+app.use('/users', usersRouter);
+// app.use('/auth/login', localAuth, authRouter); //for login
+app.use('/auth', authRouter); //for refresh
 //Any endpoint that passes the jwtAuth strategy and is validted: The `req.user` has a value now because of `done(null, payload.user)` in JWT Strategy
 
 // Custom 404 Not Found route handler
