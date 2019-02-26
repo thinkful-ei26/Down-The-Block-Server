@@ -51,6 +51,7 @@ router.post('/:geo/:forum', (req, res, next) => {
   let coordinates = JSON.parse(req.params.geo);
   newPost.coordinates = coordinates;
   let photo, post; 
+  console.log('the newPost is', newPost);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
