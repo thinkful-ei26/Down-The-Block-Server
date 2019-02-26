@@ -17,6 +17,7 @@ const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
 const {socketIO, io, server, app } = require('./utils/socket'); 
+const SocketManager = require('./utils/SocketManager');
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME, 
@@ -34,11 +35,7 @@ app.get('/chat', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', function(socket){
-  socket.on('chat-message', function(msg){
-    io.emit('chat-message', msg);
-  });
-});
+io.on('connection', SocketManager);
 
 app.use(
   cors({
