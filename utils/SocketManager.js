@@ -16,11 +16,14 @@ module.exports = function(socket){
 	let sendTypingFromUser;
 
 	//Verify Username
-	socket.on('VERIFY_USER', (user, callback)=>{
-		if(isUser(connectedUsers, user.username)){
+	socket.on('VERIFY_USER', (sender, reciever, callback)=>{
+		if(isUser(connectedUsers, sender.username)){
 			callback({ username:null })
-		}else{
-			callback({ username:createUser({username:user.username})})
+		} else{
+			callback({ 
+				username:createUser({username:sender.username}),
+				chat:createChat({name:`Chat Between ${sender.firstname} & ${reciever.firstname}`})
+			})
 		}
 	})
 
@@ -44,7 +47,6 @@ module.exports = function(socket){
 		}
 	})
 
-
 	//User logsout
 	socket.on('LOGOUT', ()=>{
 		connectedUsers = removeUser(connectedUsers, socket.user.username)
@@ -67,62 +69,34 @@ module.exports = function(socket){
 	})
 
 }
-/*
-* Returns a function that will take a chat id and a boolean isTyping
-* and then emit a broadcast to the chat id that the sender is typing
-* @param sender {string} username of sender
-* @return function(chatId, message)
-*/
+
 function sendTypingToChat(user){
 	return (chatId, isTyping)=>{
 		io.io.emit(`TYPING-${chatId}`, {user, isTyping})
 	}
 }
 
-/*
-* Returns a function that will take a chat id and message
-* and then emit a broadcast to the chat id.
-* @param sender {string} username of sender
-* @return function(chatId, message)
-*/
 function sendMessageToChat(sender){
 	return (chatId, message)=>{
+		console.log('CHATID BEING RECIEVED WITH NEW MESSAGE:', chatId);
 		io.io.emit(`MESSAGE_RECIEVED-${chatId}`, createMessage({message, sender}))
 	}
 }
 
-/*
-* Adds user to list passed in.
-* @param userList {Object} Object with key value pairs of users
-* @param user {User} the user to added to the list.
-* @return userList {Object} Object with key value pairs of Users
-*/
 function addUser(userList, user){
 	console.log('USERLIST FROM ADD USER', userList);
 	let newList = Object.assign({}, userList);
+	newList.username= user
 	console.log('NEWLIST FROM ADD USER',newList);
-	newList.username = user
 	return newList
 }
 
-/*
-* Removes user from the list passed in.
-* @param userList {Object} Object with key value pairs of Users
-* @param username {string} name of user to be removed
-* @return userList {Object} Object with key value pairs of Users
-*/
 function removeUser(userList, username){
 	let newList = Object.assign({}, userList)
 	delete newList[username]
 	return newList
 }
 
-/*
-* Checks if the user is in list passed in.
-* @param userList {Object} Object with key value pairs of Users
-* @param username {String}
-* @return userList {Object} Object with key value pairs of Users
-*/
 function isUser(userList, username){
   	return username in userList
 }
