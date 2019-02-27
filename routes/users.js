@@ -194,7 +194,6 @@ router.post('/', (req,res,next) => {
         return cloudinary.uploader.upload(photo[0].path);
       }
       else{
-        console.log('2. NOT UPLOADING TO CLOUDINARY');
         return null;
       }
     })
@@ -208,7 +207,6 @@ router.post('/', (req,res,next) => {
         return User.findOneAndUpdate({registerUsername: currentUser.registerUsername}, {photo: photo}, {new: true} );
       }
       else{
-        console.log('3. NO RESULTS:');
         return currentUser;
       }
     })
