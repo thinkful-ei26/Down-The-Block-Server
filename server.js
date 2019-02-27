@@ -17,7 +17,7 @@ const commentsRouter = require('./routes/comments');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
 const SocketManager = require('./utils/SocketManager');
-const {io, server, app } = require('./utils/socket'); 
+const {io, server, app } = require('./utils/socket');
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -30,13 +30,6 @@ app.get('/chat', function(req, res){
 });
 
 io.on('connection', SocketManager);
-
-// TRY TO USE NAMESPACEING DIDNT WORK
-// let nsp = io.of('/nsp');
-// nsp.on('connection', function(socket){
-//   console.log("someones connected")
-//   });
-//   nsp.emit('hi', "everyone!");
 
 app.use(
   cors({
