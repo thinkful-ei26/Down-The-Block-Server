@@ -218,7 +218,7 @@ router.post('/', (req,res,next) => {
     .catch(err => {
       if (err.code === 11000) {
         err = {
-          message: 'The username already exists',
+          message: 'This username is already taken. Please try again!',
           reason: 'ValidationError',
           location: 'registerUsername',
           status: 422
@@ -320,7 +320,7 @@ router.put('/account', jwtAuth, (req,res,next) => {
     .catch(err => {
       if (err.code === 11000) {
         err = {
-          message: 'The username already exists',
+          message: 'This username is already taken. Please try again!',
           reason: 'ValidationError',
           location: 'username',
           status: 422
