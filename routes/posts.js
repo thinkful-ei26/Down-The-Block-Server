@@ -143,7 +143,7 @@ router.put('/:postId', (req, res, next) => {
     .then((post) => {
       console.log('EDITED POST BEING SENT BAC', post);
       io.emit('edited_post', post);
-      res.status(200);
+      return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
       next(err);
