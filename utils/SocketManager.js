@@ -16,23 +16,20 @@ module.exports = function(socket){
 	let sendTypingFromUser;
 
 	//Verify Username
-	socket.on('VERIFY_USER', (sender, reciever, callback)=>{
-		if(isUser(connectedUsers, sender.username)){
-			callback({ username:null })
-		} else{
-			callback({ 
-				username:createUser({username:sender.username}),
-				chat:createChat({name:`Chat Between ${sender.firstname} & ${reciever.firstname}`})
-			})
-		}
-	})
+	socket.on('VERIFY_USER', (user)=>({
+				username:createUser({username:user.username, socketId:socket.id})
+		})
+	)
 
 	//User Connects with username
 	socket.on('USER_CONNECTED', (user)=>{
-		connectedUsers = addUser(connectedUsers, user.username);
+		user.socketId = socket.id
+		connectedUsers = addUser(connectedUsers, user);
 		socket.user = user;
+
 		sendMessageToChatFromUser = sendMessageToChat(user.username);
 		sendTypingFromUser = sendTypingToChat(user.username);
+
 		console.log('CONNECTED USERS FROM USER_CONNECTED',connectedUsers);
 		io.io.emit('USER_CONNECTED', connectedUsers);
 	})
@@ -68,6 +65,17 @@ module.exports = function(socket){
 		sendTypingFromUser(chatId, isTyping)
 	})
 
+	socket.on('PRIVATE_MESSAGE', ({reciever, sender})=>{
+			console.log('RECIEVER',reciever); 
+			console.log('SENDER',sender); 
+			console.log('CONNECTED USERS', connectedUsers)
+			if(reciever in connectedUsers){
+			const newChat = createChat({ name:`${reciever}&${sender.username}`, users:[reciever, sender.username] })
+			const recieverSocket = connectedUsers[reciever].socketId;
+			socket.to(recieverSocket).emit('PRIVATE_MESSAGE', newChat)
+			socket.emit('PRIVATE_MESSAGE', newChat)
+			}
+	})
 }
 
 function sendTypingToChat(user){
@@ -86,7 +94,7 @@ function sendMessageToChat(sender){
 function addUser(userList, user){
 	console.log('USERLIST FROM ADD USER', userList);
 	let newList = Object.assign({}, userList);
-	newList.username= user
+	newList[user.username] = user 
 	console.log('NEWLIST FROM ADD USER',newList);
 	return newList
 }
