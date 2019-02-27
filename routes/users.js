@@ -72,6 +72,20 @@ router.get('/', (req, res, next)=>{
   //get all users
 });
 
+//Get A list of all users
+router.get('/', (req, res, next)=>{
+  User.find({}, function(err, users) {
+    let userMap = {};
+
+    users.forEach(function(user) {
+      userMap[user._id] = user;
+    });
+
+    res.send(userMap);
+  })
+  //get all users
+})
+
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
   //First do validation (dont trust client)
