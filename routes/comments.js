@@ -3,10 +3,8 @@
 const express = require('express');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
-const User = require('../models/user');
-
 const { io } = require('../utils/socket');
-const moment = require('moment');
+
 
 const router = express.Router(); 
 
