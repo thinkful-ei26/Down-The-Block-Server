@@ -53,9 +53,9 @@ module.exports = function(socket){
 	})
 
 	//Get Community Chat
-	socket.on('COMMUNITY_CHAT', (callback)=>{
-		callback(communityChat)
-	})
+	// socket.on('COMMUNITY_CHAT', (callback)=>{
+	// 	callback(communityChat)
+	// })
 
 	socket.on('MESSAGE_SENT', ({chatId, message})=>{
 		sendMessageToChatFromUser(chatId, message)
@@ -70,10 +70,10 @@ module.exports = function(socket){
 			console.log('SENDER',sender); 
 			console.log('CONNECTED USERS', connectedUsers)
 			if(reciever in connectedUsers){
-			const newChat = createChat({ name:`${reciever}&${sender.username}`, users:[reciever, sender.username] })
-			const recieverSocket = connectedUsers[reciever].socketId;
-			socket.to(recieverSocket).emit('PRIVATE_MESSAGE', newChat)
-			socket.emit('PRIVATE_MESSAGE', newChat)
+				const newChat = createChat({ name:`Conversation between you & ${sender.firstName}`, users:[reciever, sender.username] })
+				const recieverSocket = connectedUsers[reciever].socketId;
+				socket.to(recieverSocket).emit('PRIVATE_MESSAGE', newChat)
+				socket.emit('PRIVATE_MESSAGE', newChat)
 			}
 	})
 }
@@ -91,7 +91,7 @@ function sendMessageToChat(sender){
 	}
 }
 
-function addUser(userList, user){
+function addUser(userList, user) {
 	console.log('USERLIST FROM ADD USER', userList);
 	let newList = Object.assign({}, userList);
 	newList[user.username] = user 

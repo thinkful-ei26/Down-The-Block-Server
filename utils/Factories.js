@@ -34,7 +34,6 @@ const createMessage = ({message = "", sender = ""} = { })=>(
 			message,
 			sender	
 		}
-
 );
 
 /*
