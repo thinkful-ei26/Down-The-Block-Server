@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // 'use strict';
 
 // const mongoose = require('mongoose');
@@ -24,7 +23,6 @@
 // const Chat = mongoose.model('Chat', ChatSchema); 
 
 // module.exports = Chat;
-=======
 'use strict';
 
 const mongoose = require('mongoose');
@@ -48,4 +46,3 @@ chatSchema.set('toJSON', {
 const Chat = mongoose.model('Chat', chatSchema);
 
 module.exports = Comment;
->>>>>>> dev
