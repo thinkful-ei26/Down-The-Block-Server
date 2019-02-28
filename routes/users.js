@@ -72,6 +72,20 @@ router.get('/', (req, res, next)=>{
   //get all users
 });
 
+//Get A list of all users
+router.get('/', (req, res, next)=>{
+  User.find({}, function(err, users) {
+    let userMap = {};
+
+    users.forEach(function(user) {
+      userMap[user._id] = user;
+    });
+
+    res.send(userMap);
+  })
+  //get all users
+})
+
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
   //First do validation (dont trust client)
@@ -180,7 +194,6 @@ router.post('/', (req,res,next) => {
         return cloudinary.uploader.upload(photo[0].path);
       }
       else{
-        console.log('2. NOT UPLOADING TO CLOUDINARY');
         return null;
       }
     })
@@ -194,7 +207,6 @@ router.post('/', (req,res,next) => {
         return User.findOneAndUpdate({registerUsername: currentUser.registerUsername}, {photo: photo}, {new: true} );
       }
       else{
-        console.log('3. NO RESULTS:');
         return currentUser;
       }
     })
@@ -206,7 +218,7 @@ router.post('/', (req,res,next) => {
     .catch(err => {
       if (err.code === 11000) {
         err = {
-          message: 'The username already exists',
+          message: 'This username is already taken. Please try again!',
           reason: 'ValidationError',
           location: 'registerUsername',
           status: 422
@@ -308,7 +320,7 @@ router.put('/account', jwtAuth, (req,res,next) => {
     .catch(err => {
       if (err.code === 11000) {
         err = {
-          message: 'The username already exists',
+          message: 'This username is already taken. Please try again!',
           reason: 'ValidationError',
           location: 'username',
           status: 422

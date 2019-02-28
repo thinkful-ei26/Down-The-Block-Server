@@ -51,6 +51,7 @@ router.post('/:geo/:forum', (req, res, next) => {
   let coordinates = JSON.parse(req.params.geo);
   newPost.coordinates = coordinates;
   let photo, post; 
+  console.log('the newPost is', newPost);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -142,7 +143,7 @@ router.put('/:postId', (req, res, next) => {
     .then((post) => {
       console.log('EDITED POST BEING SENT BAC', post);
       io.emit('edited_post', post);
-      res.status(200);
+      return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
     .catch(err => {
       next(err);
