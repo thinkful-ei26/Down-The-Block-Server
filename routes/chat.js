@@ -7,6 +7,28 @@ const User = require('../models/user');
 
 const router = express.Router();
 
+
+
+/* GET A SINGLE CHAT */
+router.get('/:chatId', (req, res, next) => {
+
+  const chatId = req.params; 
+
+  Chat.findById({_id:chatId})
+    .populate({
+      path: 'messages',
+      populate: { path: 'userId' }
+    })
+    .populate('userId')
+    .then(messages => {
+      return res.json(messages);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+
 /* ========== POST/CREATE A CHAT ========== */
 router.post('/', (req, res, next) => {
   const { date, currentUser, recipientUser } = req.body;
