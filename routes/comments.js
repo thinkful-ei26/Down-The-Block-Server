@@ -35,10 +35,10 @@ router.post('/', (req, res, next) => {
 router.put('/:postId/:commentId', (req, res, next) => {
   const { commentId, postId } = req.params;
   const userId = req.user.id;
-  const editedComment = req.body;
+  const {content} = req.body;
 
-  Comment.findOneAndUpdate({_id: commentId, userId}, editedComment, {new: true})
-    .then(comment=>{
+  Comment.findOneAndUpdate({_id: commentId, userId}, content, {new: true})
+    .then(()=>{
       return Post.findById (postId)
         .populate({
           path: 'comments',
