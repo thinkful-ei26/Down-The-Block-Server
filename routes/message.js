@@ -18,12 +18,8 @@ router.post('/:namespace', (req, res, next) => {
 
 /* ========== CREATE A MESSAGE ========== */
 router.put('/:namespace', (req, res, next) => {
-  console.log('HERE')
-
-  console.log('THE NAMESPACE IS', nsp);
-
-  const { content, date, authorName, chatId } = req.body;
-  const message = { content, authorName, date, chatId };
+  const { content, date, author, chatId } = req.body;
+  const message = { content, author, date, chatId };
 
   console.log('1.THE MESSAGE IS', message);
 
@@ -33,7 +29,9 @@ router.put('/:namespace', (req, res, next) => {
       return Chat.findByIdAndUpdate( {_id: chatId}, {$push: {messages: message.id}}, {new: true})
         .populate({
           path: 'messages',
-        });
+          populate: { path: 'author' }
+        })
+        .populate('participants');
     })
     .then(chat => {
       console.log('3.CHAT BEING SENT BACK IS', chat);

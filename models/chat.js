@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({
   messages: [{type: mongoose.Schema.Types.ObjectId, ref: 'Message'}],
-  chatParticipants: [ {type: String, required: true}  ],
+  participants: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   namespace: { type: String }
 });
 

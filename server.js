@@ -52,7 +52,7 @@ const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
 app.use('/posts', jwtAuth, postsRouter);
-app.use('/messages', messageRouter);
+app.use('/messages', jwtAuth, messageRouter);
 app.use('/chats', jwtAuth, chatRouter);
 app.use('/comments', jwtAuth, commentsRouter);
 app.use('/users', usersRouter);

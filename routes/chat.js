@@ -20,7 +20,7 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
       //if the chat between these two users hasn't been created yet, create it
       if(chat.length===0){
         console.log('NO CHAT');
-        return Chat.create({chatParticipants: [userId1, userId2], namespace: namespace});
+        return Chat.create({namespace: namespace, participants: [userId1, userId2]});
       }
       else{
         console.log('YES CHAT');
@@ -32,7 +32,9 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
       return Chat.findById({_id: chat._id})
         .populate({
           path: 'messages',
-        });
+          populate: { path: 'author' }
+        })
+        .populate('partcipants');
     })
     .then(chat=>{
       console.log('3.CHAT IS', chat);
