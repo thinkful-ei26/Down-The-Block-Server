@@ -1,52 +1,48 @@
 'use strict';
 const express = require('express');
+const mongoose = require('mongoose');
 const Chat = require('../models/chat');
 const User = require('../models/user');
+const Message = require('../models/message');
 
-// const { socketIO, io, server, app } = require('../utils/socket');
-
+const { io } = require('../utils/socket');
 const router = express.Router();
 
-
-
 /* GET A SINGLE CHAT */
-router.get('/:chatId', (req, res, next) => {
+router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
 
-  const chatId = req.params; 
+  const {namespace, userId1, userId2} = req.params; 
 
-  Chat.findById({_id:chatId})
-    .populate({
-      path: 'messages',
-      populate: { path: 'userId' }
+  console.log('1.', namespace, userId1, userId2);
+
+  Chat.find({namespace})
+    .then(chat => {
+      //if the chat between these two users hasn't been created yet, create it
+      if(chat.length===0){
+        console.log('NO CHAT');
+        return Chat.create({namespace: namespace, participants: [userId1, userId2]});
+      }
+      else{
+        console.log('YES CHAT');
+        return chat[0];
+      }
     })
-    .populate('userId')
-    .then(messages => {
-      return res.json(messages);
+    .then(chat=> {
+      console.log('2. CHAT IS', chat);
+      return Chat.findById({_id: chat._id})
+        .populate({
+          path: 'messages',
+          populate: { path: 'author' }
+        })
+        .populate('partcipants');
+    })
+    .then(chat=>{
+      console.log('3.CHAT IS', chat);
+      return res.json(chat);
     })
     .catch(err => {
       next(err);
     });
-});
-
-
-/* ========== POST/CREATE A CHAT ========== */
-router.post('/', (req, res, next) => {
-  const { date, currentUser, recipientUser } = req.body;
-  const newChat = { date, currentUser, recipientUser };
-
-  Chat.create(newChat)
-    .then(chat => {
-      return User.findByIdAndUpdate( {_id: recipientUser.id}, {$push: {chats: {participant:currentUser.id , chatId:chat.id}}}, {new: true})
-    })
-    .then(user=> {
-      console.log(user);
-      const index = user.chats.length - 1;
-      return res.status(201).location(`http://${req.headers.host}/chats/${user.chats[index].chatId}`).json(user.chats[index].chatId);
-    })
-    .then( () => {
-      return User.findByIdAndUpdate( {_id:currentUser.id }, {$push: {chats: {participant: recipientUser.id , chatId:chat.id}}}, {new: true})
-    })
-    .catch(err => next(err));
 });
 
 module.exports = router;

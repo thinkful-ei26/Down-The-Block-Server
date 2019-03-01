@@ -10,7 +10,6 @@ const userSchema = new mongoose.Schema({
   password: {type: String, required: true},
   photo: { type: Object },
   coordinates: { type: Object },
-  chats:{ type: Array , default: [] }
 });
 
 userSchema.index({username: 1, userId: 1}, {unique:true}); // usernames should be unique for each user. The solution is to use compound indexes.
