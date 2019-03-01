@@ -27,16 +27,6 @@ cloudinary.config({
   api_secret: process.env.API_SECRET
 });
 
-// app.get('/chat', function(req, res){
-//   res.sendFile(__dirname + '/index.html');
-// });
-
-// io.on('connection', function(socket){
-//   socket.on('chat-message', function(msg){
-//     io.emit('chat-message', msg);
-//   });
-// });
-
 app.use(
   cors({
     origin: CLIENT_ORIGIN,
@@ -62,7 +52,7 @@ const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
 app.use('/posts', jwtAuth, postsRouter);
-app.use('/messages', jwtAuth, messageRouter);
+app.use('/messages', messageRouter);
 app.use('/chats', jwtAuth, chatRouter);
 app.use('/comments', jwtAuth, commentsRouter);
 app.use('/users', usersRouter);

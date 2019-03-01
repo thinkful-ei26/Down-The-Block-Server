@@ -8,10 +8,17 @@ const { io } = require('../utils/socket');
 
 const router = express.Router(); 
 
-/* ========== CREATE A MESSAGE ========== */
+let nsp={};
+
+/*CREATE THE NAMESPACE*/
 router.post('/:namespace', (req, res, next) => {
-  let {namespace} = req.params;
-  let nsp = io.of(`/${namespace}`);
+  nsp[req.params.namespace] = io.of(`/${req.params.namespace}`);
+  res.json({namespace: req.params.namespace});
+});
+
+/* ========== CREATE A MESSAGE ========== */
+router.put('/:namespace', (req, res, next) => {
+  console.log('HERE')
 
   console.log('THE NAMESPACE IS', nsp);
 
@@ -30,8 +37,8 @@ router.post('/:namespace', (req, res, next) => {
     })
     .then(chat => {
       console.log('3.CHAT BEING SENT BACK IS', chat);
-      nsp.emit('chat', chat);
-      return res.status(201).location(`http://${req.headers.host}/messages/${chat.id}`).json(chat);
+      nsp[req.params.namespace].emit('chat', chat);
+      return res.status(201).json(chat);
     })
     .catch(err => next(err));
 });
