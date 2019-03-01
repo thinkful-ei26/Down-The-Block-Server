@@ -1,128 +1,112 @@
-const io = require('./socket')
+// 'use strict';
 
-const { createUser, createMessage, createChat } = require('./Factories')
+// const io = require('./socket');
 
-let connectedUsers = { }
+// const { createUser, createMessage, createChat } = require('./Factories');
 
-let communityChat = createChat()
+// let connectedUsers = { };
 
-module.exports = function(socket){
+// let communityChat = createChat();
+
+// module.exports = function(socket){
 					
-	// console.log('\x1bc'); //clears console
-	console.log("Socket Id:" + socket.id);
+//   // console.log('\x1bc'); //clears console
+//   console.log('Socket Id:' + socket.id);
 
-	let sendMessageToChatFromUser;
+//   let sendMessageToChatFromUser;
 
-	let sendTypingFromUser;
+//   let sendTypingFromUser;
 
-	//Verify Username
-	socket.on('VERIFY_USER', (user, callback)=>{
-		if(isUser(connectedUsers, user.username)){
-			callback({ username:null })
-		}else{
-			callback({ username:createUser({username:user.username})})
-		}
-	})
+//   //Verify Username
+//   socket.on('VERIFY_USER', (user)=>({
+//     username:createUser({username:user.username, socketId:socket.id})
+//   })
+//   );
 
-	//User Connects with username
-	socket.on('USER_CONNECTED', (user)=>{
-		connectedUsers = addUser(connectedUsers, user.username);
-		socket.user = user;
-		sendMessageToChatFromUser = sendMessageToChat(user.username);
-		sendTypingFromUser = sendTypingToChat(user.username);
-		console.log('CONNECTED USERS FROM USER_CONNECTED',connectedUsers);
-		io.io.emit('USER_CONNECTED', connectedUsers);
-	})
+//   //User Connects with username
+//   socket.on('USER_CONNECTED', (user)=>{
+//     user.socketId = socket.id;
+//     connectedUsers = addUser(connectedUsers, user);
+//     socket.user = user;
+
+//     sendMessageToChatFromUser = sendMessageToChat(user.username);
+//     sendTypingFromUser = sendTypingToChat(user.username);
+
+//     console.log('CONNECTED USERS FROM USER_CONNECTED',connectedUsers);
+//     io.io.emit('USER_CONNECTED', connectedUsers);
+//   });
 	
-	//User disconnects
-	socket.on('disconnect', ()=>{
-		if("user" in socket){
-			connectedUsers = removeUser(connectedUsers, socket.user.username)
+//   //User disconnects
+//   socket.on('disconnect', ()=>{
+//     if('user' in socket){
+//       connectedUsers = removeUser(connectedUsers, socket.user.username);
 
-			io.io.emit('USER_DISCONNECTED', connectedUsers)
-			console.log("Disconnect", connectedUsers);
-		}
-	})
+//       io.io.emit('USER_DISCONNECTED', connectedUsers);
+//       console.log('Disconnect', connectedUsers);
+//     }
+//   });
 
+//   //User logsout
+//   socket.on('LOGOUT', ()=>{
+//     connectedUsers = removeUser(connectedUsers, socket.user.username);
+//     io.io.emit('USER_DISCONNECTED', connectedUsers);
+//     console.log('Disconnect', connectedUsers);
 
-	//User logsout
-	socket.on('LOGOUT', ()=>{
-		connectedUsers = removeUser(connectedUsers, socket.user.username)
-		io.io.emit('USER_DISCONNECTED', connectedUsers)
-		console.log("Disconnect", connectedUsers);
+//   });
 
-	})
+//   //Get Community Chat
+//   // socket.on('COMMUNITY_CHAT', (callback)=>{
+//   // 	callback(communityChat)
+//   // })
 
-	//Get Community Chat
-	socket.on('COMMUNITY_CHAT', (callback)=>{
-		callback(communityChat)
-	})
+//   socket.on('MESSAGE_SENT', ({chatId, message})=>{
+//     sendMessageToChatFromUser(chatId, message);
+//   });
 
-	socket.on('MESSAGE_SENT', ({chatId, message})=>{
-		sendMessageToChatFromUser(chatId, message)
-	})
+//   socket.on('TYPING', ({chatId, isTyping})=>{
+//     sendTypingFromUser(chatId, isTyping);
+//   });
 
-	socket.on('TYPING', ({chatId, isTyping})=>{
-		sendTypingFromUser(chatId, isTyping)
-	})
+//   socket.on('PRIVATE_MESSAGE', ({reciever, sender})=>{
+//     console.log('RECIEVER',reciever); 
+//     console.log('SENDER',sender); 
+//     console.log('CONNECTED USERS', connectedUsers);
+//     if(reciever in connectedUsers){
+//       const newChat = createChat({ name:`Conversation between you & ${sender.firstName}`, users:[reciever, sender.username] });
+//       const recieverSocket = connectedUsers[reciever].socketId;
+//       socket.to(recieverSocket).emit('PRIVATE_MESSAGE', newChat);
+//       socket.emit('PRIVATE_MESSAGE', newChat);
+//     }
+//   });
+// };
 
-}
-/*
-* Returns a function that will take a chat id and a boolean isTyping
-* and then emit a broadcast to the chat id that the sender is typing
-* @param sender {string} username of sender
-* @return function(chatId, message)
-*/
-function sendTypingToChat(user){
-	return (chatId, isTyping)=>{
-		io.io.emit(`TYPING-${chatId}`, {user, isTyping})
-	}
-}
+// function sendTypingToChat(user){
+//   return (chatId, isTyping)=>{
+//     io.io.emit(`TYPING-${chatId}`, {user, isTyping});
+//   };
+// }
 
-/*
-* Returns a function that will take a chat id and message
-* and then emit a broadcast to the chat id.
-* @param sender {string} username of sender
-* @return function(chatId, message)
-*/
-function sendMessageToChat(sender){
-	return (chatId, message)=>{
-		io.io.emit(`MESSAGE_RECIEVED-${chatId}`, createMessage({message, sender}))
-	}
-}
+// function sendMessageToChat(sender){
+//   return (chatId, message)=>{
+//     console.log('CHATID BEING RECIEVED WITH NEW MESSAGE:', chatId);
+//     io.io.emit(`MESSAGE_RECIEVED-${chatId}`, createMessage({message, sender}));
+//   };
+// }
 
-/*
-* Adds user to list passed in.
-* @param userList {Object} Object with key value pairs of users
-* @param user {User} the user to added to the list.
-* @return userList {Object} Object with key value pairs of Users
-*/
-function addUser(userList, user){
-	console.log('USERLIST FROM ADD USER', userList);
-	let newList = Object.assign({}, userList);
-	console.log('NEWLIST FROM ADD USER',newList);
-	newList.username = user
-	return newList
-}
+// function addUser(userList, user) {
+//   console.log('USERLIST FROM ADD USER', userList);
+//   let newList = Object.assign({}, userList);
+//   newList[user.username] = user; 
+//   console.log('NEWLIST FROM ADD USER',newList);
+//   return newList;
+// }
 
-/*
-* Removes user from the list passed in.
-* @param userList {Object} Object with key value pairs of Users
-* @param username {string} name of user to be removed
-* @return userList {Object} Object with key value pairs of Users
-*/
-function removeUser(userList, username){
-	let newList = Object.assign({}, userList)
-	delete newList[username]
-	return newList
-}
+// function removeUser(userList, username){
+//   let newList = Object.assign({}, userList);
+//   delete newList[username];
+//   return newList;
+// }
 
-/*
-* Checks if the user is in list passed in.
-* @param userList {Object} Object with key value pairs of Users
-* @param username {String}
-* @return userList {Object} Object with key value pairs of Users
-*/
-function isUser(userList, username){
-  	return username in userList
-}
+// function isUser(userList, username){
+//   	return username in userList;
+// }

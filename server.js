@@ -14,22 +14,18 @@ const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
+const chatRouter = require('./routes/chat');
+const messageRouter = require('./routes/message');
 
 const {CLIENT_ORIGIN, PORT, MONGODB_URI } = require('./config');
-const SocketManager = require('./utils/SocketManager');
-const {io, server, app } = require('./utils/socket');
+// const SocketManager = require('./utils/SocketManager');
+const {socketIO, io, server, app } = require('./utils/socket'); 
 
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.API_KEY, 
   api_secret: process.env.API_SECRET
 });
-
-app.get('/chat', function(req, res){
-  res.sendFile(__dirname + '/index.html');
-});
-
-io.on('connection', SocketManager);
 
 app.use(
   cors({
@@ -56,6 +52,8 @@ const jwtAuth = passport.authenticate('jwt', options);
 const localAuth = passport.authenticate('local', options);
 
 app.use('/posts', jwtAuth, postsRouter);
+app.use('/messages', jwtAuth, messageRouter);
+app.use('/chats', jwtAuth, chatRouter);
 app.use('/comments', jwtAuth, commentsRouter);
 app.use('/users', usersRouter);
 app.use('/auth/login', localAuth, authRouter); //for login
