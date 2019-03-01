@@ -34,7 +34,7 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
           path: 'messages',
           populate: { path: 'author' }
         })
-        .populate('partcipants');
+        .populate('participants');
     })
     .then(chat=>{
       console.log('3.CHAT IS', chat);
