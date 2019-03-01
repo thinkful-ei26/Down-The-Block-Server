@@ -88,6 +88,7 @@ router.get('/', (req, res, next)=>{
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
+  console.log('HERE1')
   //First do validation (dont trust client)
   const requiredFields = ['registerUsername', 'password', 'firstName', 'lastName'];
 
@@ -173,15 +174,18 @@ router.post('/', (req,res,next) => {
   let finalPhoto={};
   let currentUser;
 
-  return ( !isEmpty(req.files) ? cloudinary.uploader.upload(Object.values(req.files)[0].path) : null )
+  console.log('HERE2')
+
+  return ( !isEmpty(req.files) ? cloudinary.uploader.upload(Object.values(req.files)[0].path) : Promise.resolve() )
     .then(results=>{
+      console.log('RESULTS ARE', results);
       if(results){
         finalPhoto={
           public_id: results.public_id,
           url: results.secure_url,
         };
       }
-      return User.hashPassword(password)
+      return User.hashPassword(password);
     })
     .then(digest => {
       console.log('1. CREATING USER WITH INFO', registerUsername,digest,firstName,lastName, finalPhoto);
