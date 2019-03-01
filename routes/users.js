@@ -82,9 +82,9 @@ router.get('/', (req, res, next)=>{
     });
 
     res.send(userMap);
-  })
+  });
   //get all users
-})
+});
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
@@ -170,50 +170,34 @@ router.post('/', (req,res,next) => {
   firstName = capitalizeFirstLetter(firstName);
   lastName = capitalizeFirstLetter(lastName);
 
-  let photo;
+  let finalPhoto={};
   let currentUser;
 
-  User.hashPassword(password)
+  return ( !isEmpty(req.files) ? cloudinary.uploader.upload(Object.values(req.files)[0].path) : null )
+    .then(results=>{
+      if(results){
+        finalPhoto={
+          public_id: results.public_id,
+          url: results.secure_url,
+        };
+      }
+      return User.hashPassword(password)
+    })
     .then(digest => {
-      console.log('1. CREATING USER WITH INFO', registerUsername,digest,firstName,lastName,photo);
+      console.log('1. CREATING USER WITH INFO', registerUsername,digest,firstName,lastName, finalPhoto);
       const newUser = {
         username: registerUsername,
         password: digest,
         firstName,
         lastName,
-        photo: {},
+        photo: finalPhoto,
       };
       return User.create(newUser);
-    })
-    .then(user=> {
-      currentUser=user;
-      if(!isEmpty(req.files)){
-        console.log('2. UPLOADING TO CLOUDINARY');
-        photo = Object.values(req.files);
-        // first upload the image to cloudinary
-        return cloudinary.uploader.upload(photo[0].path);
-      }
-      else{
-        return null;
-      }
-    })
-    .then(results => {
-      if(results){
-        console.log('3. CLOUDINARY RESULTS:', results);
-        photo = {
-          public_id: results.public_id,
-          url: results.secure_url,
-        };
-        return User.findOneAndUpdate({registerUsername: currentUser.registerUsername}, {photo: photo}, {new: true} );
-      }
-      else{
-        return currentUser;
-      }
     })
     .then(user => {
       console.log('4. USER IS', user);
       // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
-      return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
+      return res.status(201).json(user);
     })
     .catch(err => {
       if (err.code === 11000) {
