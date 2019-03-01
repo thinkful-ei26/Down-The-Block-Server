@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const messageSchema = new mongoose.Schema({
   content: { type: String, required: true },
   date: { type: String, required: true },
-  authorUsername: { type:String, required: true }, 
+  authorName: { type:String, required: true }, 
   chatId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chat', required: true }
 });
 
