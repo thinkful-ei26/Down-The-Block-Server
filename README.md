@@ -1,7 +1,7 @@
 # Down The Block
 
 
-[downtheblock.io.com](https://neighbors-client.herokuapp.com/ "Google's Homepage")
+[downtheblock.us](https://neighbors-client.herokuapp.com/ "Google's Homepage")
 
 ![alt text](https://github.com/thinkful-ei26/neighborhood-watch-client/blob/feature-private-messages/public/Neighborhood_2.png "Sims")
 
@@ -25,6 +25,7 @@
 
 ![alt text](https://github.com/thinkful-ei26/Down-The-Block-Client/blob/dev/public/screenshot2.png "Sims")
 
+### Server Tech Stack
 
-
-### Posts can include a wide range of catagories including crime, accidents, robberies, events, parties, etc
+Node and Express
+MongoDB hosted on MongoDB Atlas with Mongoose for schema design
