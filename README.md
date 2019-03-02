@@ -13,6 +13,8 @@ DownTheBlock is deployed at [downtheblock.us](https://downtheblock.us)
 ![alt text](https://github.com/thinkful-ei26/Down-The-Block-Client/blob/dev/public/screenshot2.png "Sims")
 
 ### Client App Tech Stack
+The client repo can be found at https://github.com/thinkful-ei26/Down-The-Block-Client
+
 -React
 
 -Redux for state management
@@ -31,6 +33,7 @@ DownTheBlock is deployed at [downtheblock.us](https://downtheblock.us)
 -Ally-friendly: Tested with screen readers and aXe
 
 ### Server App Tech Stack
+The server app is deployed to Heroku at https://down-the-block-server.herokuapp.com/ 
 
 -Node with Express
 
@@ -39,6 +42,3 @@ DownTheBlock is deployed at [downtheblock.us](https://downtheblock.us)
 -JWT for user authentication
 
 -MongoDB hosted on MongoDB Atlas
-
-
-
