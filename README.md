@@ -50,6 +50,8 @@ Full-stack app with:
 [Project Management Trello Link](https://trello.com/b/hPCzbOTZ/neighborhood-watch "trello")
 
 ## Demo Info (Friends Edition)
-Demo Account Username: ross
-Demo Account Password: friends123
-Set location to block on browser, and manually put in 15098 Ventura Blvd, Sherman Oaks, CA 91403 into the address form to see the app in action!
+- Demo Account Username: ross
+
+- Demo Account Password: friends123
+
+- Set location to block on browser, and manually put in 15098 Ventura Blvd, Sherman Oaks, CA 91403 into the address form to see the app in action!
