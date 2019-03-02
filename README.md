@@ -13,32 +13,32 @@ DownTheBlock is deployed at [downtheblock.us](https://downtheblock.us)
 ![alt text](https://github.com/thinkful-ei26/Down-The-Block-Client/blob/dev/public/screenshot2.png "Sims")
 
 ### Client App Tech Stack
-React
+-React
 
-Redux for state management
+-Redux for state management
 
-Socket.io for real-time updates
+-Socket.io for real-time updates
 
-JWT for user authentication
+-JWT for user authentication
 
 ### UI/UX Design
-SASS  to reuse colors & fonts as variables
+-SASS  to reuse colors & fonts as variables
 
-Flexbox for a mobile-first layout
+-Flexbox for a mobile-first layout
 
-Colors/Fonts: Green/beige theme (neighborhood vibe) with Google Fonts ‘Play’ & ‘Open Sans’
+-Colors/Fonts: Green/beige theme (neighborhood vibe) with Google Fonts ‘Play’ & ‘Open Sans’
 
-Ally-friendly: Tested with screen readers and aXe
+-Ally-friendly: Tested with screen readers and aXe
 
 ### Server App Tech Stack
 
-Node with Express
+-Node with Express
 
-Mongoose for schema design
+-Mongoose for schema design
 
-JWT for user authentication
+-JWT for user authentication
 
-MongoDB hosted on MongoDB Atlas
+-MongoDB hosted on MongoDB Atlas
 
 
 
