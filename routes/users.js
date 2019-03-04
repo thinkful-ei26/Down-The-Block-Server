@@ -58,37 +58,62 @@ function tooLargeField(sizedFields, body){
 function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
-//Get A list of all users
-router.get('/', (req, res, next)=>{
-  User.find({}, function(err, users) {
-    let userMap = {};
 
-    users.forEach(function(user) {
-      userMap[user._id] = user;
+/* GET A LIST OF ALL PINNED CHATS FOR THIS USER */
+router.get('/pinnedChatUsers', jwtAuth, (req, res, next)=>{
+  console.log('HERE IN PINNED USER');
+  const userId = req.user.id;
+  console.log('id is', userId);
+
+  User.findById({_id: userId})
+    .populate('pinnedChatUsers')
+    .then(user=>{
+      let pinnedChatUsers = user.pinnedChatUsers;
+      return res.json(pinnedChatUsers);
+    })
+    .catch(err => {
+      console.log('THERES AN ERROR');
+      next(err);
     });
-
-    res.send(userMap);
-  });
-  //get all users
 });
 
-//Get A list of all users
-router.get('/', (req, res, next)=>{
-  User.find({}, function(err, users) {
-    let userMap = {};
+/* GET ALL USERS WITHIN ONE MILE RADIUS OF CURRENT USER */
+router.get('/:coords', jwtAuth, (req,res,next) => {
+  const coordsObject = JSON.parse(req.params.coords);
+  const userId = req.user.id;
 
-    users.forEach(function(user) {
-      userMap[user._id] = user;
+  console.log('COORDS OBJ IN USERS', coordsObject);
+  let filter; 
+
+  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
+  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
+  const latitudeMin = coordsObject.latitude - 0.014631;
+  const latitudeMax = coordsObject.latitude + 0.014631;
+
+  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
+  // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
+  // one mile at the equator 0.01445713459592308804394968917161 degrees
+  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
+  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
+  console.log(oneMileLongitudeInDegrees);
+  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
+  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
+
+  filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, _id: {$nin: userId}};
+
+  User.find(filter)
+    .then(users => {
+      console.log('IN USERS');
+      res.json(users);
+    })
+    .catch(err => {
+      next(err);
     });
-
-    res.send(userMap);
-  });
-  //get all users
 });
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
-  console.log('HERE1')
+  console.log('HERE1');
   //First do validation (dont trust client)
   const requiredFields = ['registerUsername', 'password', 'firstName', 'lastName'];
 
@@ -174,7 +199,7 @@ router.post('/', (req,res,next) => {
   let finalPhoto={};
   let currentUser;
 
-  console.log('HERE2')
+  console.log('HERE2');
 
   return ( !isEmpty(req.files) ? cloudinary.uploader.upload(Object.values(req.files)[0].path) : Promise.resolve() )
     .then(results=>{
@@ -461,6 +486,7 @@ router.put('/location/:coords', jwtAuth, (req,res,next) => {
 
   User.findOneAndUpdate({_id: userId}, {coordinates}, {new: true})
     .then(user => {
+      console.log('UPDATED USER IS', user);
       // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
       return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
     })
@@ -469,39 +495,23 @@ router.put('/location/:coords', jwtAuth, (req,res,next) => {
     });
 });
 
-/* GET ALL USERS WITHIN ONE MILE RADIUS OF CURRENT USER */
-router.get('/:coords', jwtAuth, (req,res,next) => {
-  const coordsObject = JSON.parse(req.params.coords);
+/* DELETE A CHAT FROM PINNED ARRAY */
+router.delete('/pinnedChatUsers/:chatUserId', jwtAuth, (req, res, next)=>{
   const userId = req.user.id;
+  let {chatUserId} = req.params;
 
-  console.log('COORDS OBJ IN USERS', coordsObject);
-  let filter; 
-
-  // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
-  // see https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude for more info
-  const latitudeMin = coordsObject.latitude - 0.014631;
-  const latitudeMax = coordsObject.latitude + 0.014631;
-
-  // the longitude to mile conversion varies greatly based on the input latitude, this calculation handles that conversion (from https://gis.stackexchange.com/questions/142326/calculating-longitude-length-in-miles)
-  // one mile at my latitude (~34)is equal to 0.017457206881313057 degrees
-  // one mile at the equator 0.01445713459592308804394968917161 degrees
-  const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
-  const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-  console.log(oneMileLongitudeInDegrees);
-  const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
-  const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
-
-  filter = {'coordinates.latitude': {$gte: latitudeMin, $lte: latitudeMax}, 'coordinates.longitude': {$gte: longitudeMin, $lte: longitudeMax}, _id: {$nin: userId}};
-
-  User.find(filter)
-    .then(users => {
-      console.log('IN USERS');
-      res.json(users);
+  User.findOneAndUpdate({_id: userId},
+    { $pull: { pinnedChatUsers: chatUserId } }
+  )
+    .populate('pinnedChatUsers')
+    .then(user=>{
+      let pinnedChatUsers = user.pinnedChatUsers;
+      return res.json(pinnedChatUsers);
     })
     .catch(err => {
+      console.log('THERES AN ERROR');
       next(err);
     });
 });
-
 
 module.exports = router;

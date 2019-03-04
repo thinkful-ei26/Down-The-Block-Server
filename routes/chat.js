@@ -10,15 +10,15 @@ const router = express.Router();
 
 /* GET A SINGLE CHAT */
 router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
-
   const {namespace, userId1, userId2} = req.params; 
-
-  console.log('1.', namespace, userId1, userId2);
+  let newChat = false;
+  let finalChat;
 
   Chat.find({namespace})
     .then(chat => {
       //if the chat between these two users hasn't been created yet, create it
       if(chat.length===0){
+        newChat=true;
         console.log('NO CHAT');
         return Chat.create({namespace: namespace, participants: [userId1, userId2]});
       }
@@ -27,9 +27,20 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
         return chat[0];
       }
     })
-    .then(chat=> {
-      console.log('2. CHAT IS', chat);
-      return Chat.findById({_id: chat._id})
+    .then(chat=>{
+      finalChat=chat;
+      if (newChat){
+        const pinChatToUserOnePromise = User.findByIdAndUpdate( {_id: userId1}, {$push: {pinnedChatUsers: userId2}}, {new: true});
+        const pinChatToUserTwoPromise = User.findByIdAndUpdate( {_id: userId2}, {$push: {pinnedChatUsers: userId1}}, {new: true});
+        return Promise.all([pinChatToUserOnePromise, pinChatToUserTwoPromise]);
+      }
+      else{
+        return Promise.resolve();
+      }
+    })
+    .then(()=> {
+      console.log('2. CHAT IS', finalChat);
+      return Chat.findById({_id: finalChat._id})
         .populate({
           path: 'messages',
           populate: { path: 'author' }
