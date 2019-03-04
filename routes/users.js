@@ -495,4 +495,23 @@ router.put('/location/:coords', jwtAuth, (req,res,next) => {
     });
 });
 
+/* DELETE A CHAT FROM PINNED ARRAY */
+router.delete('/pinnedChatUsers/:chatUserId', jwtAuth, (req, res, next)=>{
+  const userId = req.user.id;
+  let {chatUserId} = req.params;
+
+  User.findOneAndUpdate({_id: userId},
+    { $pull: { pinnedChatUsers: chatUserId } }
+  )
+    .populate('pinnedChatUsers')
+    .then(user=>{
+      let pinnedChatUsers = user.pinnedChatUsers;
+      return res.json(pinnedChatUsers);
+    })
+    .catch(err => {
+      console.log('THERES AN ERROR');
+      next(err);
+    });
+});
+
 module.exports = router;
