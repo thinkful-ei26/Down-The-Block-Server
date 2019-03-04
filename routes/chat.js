@@ -29,14 +29,17 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
     })
     .then(chat=>{
       finalChat=chat;
+      let promiseOne = User.find({_id: userId1, pinnedChatUsers:{$in: userId2}});
+      let promiseTwo =User.find({_id: userId2, pinnedChatUsers:{$in: userId1}});
       //check if this chat exists in user's pinned chats already
-      return User.find({_id: userId1, pinnedChatUsers:{$in: userId2}});
+      return Promise.all([promiseOne, promiseTwo]);
     })
-    .then(user=>{
-      if (user.length===0){
+    .then(([user1, user2])=>{
+      console.log('USER1', user1, 'USER2', user2);
+      if (user1.length===0 || user2.length===0 ){
         const pinChatToUserOnePromise = User.findByIdAndUpdate( {_id: userId1}, {$push: {pinnedChatUsers: userId2}}, {new: true});
         const pinChatToUserTwoPromise = User.findByIdAndUpdate( {_id: userId2}, {$push: {pinnedChatUsers: userId1}}, {new: true});
-        return Promise.all([pinChatToUserOnePromise, pinChatToUserTwoPromise]);
+        return Promise.all([user1.length===0 && pinChatToUserOnePromise,  user2.length===0 && pinChatToUserTwoPromise]);
       }
       else{
         return Promise.resolve();
