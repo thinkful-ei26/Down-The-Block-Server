@@ -18,7 +18,7 @@ const jwtStrategy = new JwtStrategy(options, (payload, done) => {
 
   //// The following line accepts the JWT and sets `req.user = user`
   // if(payload.user){
-    done(null, payload.user); //// JWT is valid - sets `req.user = payload.user`
+  done(null, payload.user); //// JWT is valid - sets `req.user = payload.user`
   // }
   //this validates whether or not the user has a valid token by calling .verify behind the scenes - if that fails it'll bubble up to our error handler
 });

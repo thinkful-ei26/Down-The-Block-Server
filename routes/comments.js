@@ -5,7 +5,6 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const { io } = require('../utils/socket');
 
-
 const router = express.Router(); 
 
 /* ========== POST/CREATE A COMMENT ========== */
@@ -59,7 +58,6 @@ router.delete('/:postId/:commentId', (req, res, next) => {
   const userId = req.user.id;
   const commentDeletePromise =  Comment.findOneAndDelete({_id:commentId, userId});
 
-  console.log('DELETING COMMENT', postId, commentId, userId);
   //also remove comment from the post's comments array
   const postCommentPullPromise = Post.findOneAndUpdate({_id: postId, userId}, { $pull: { comments: commentId } }, {new: true});
 
@@ -70,7 +68,6 @@ router.delete('/:postId/:commentId', (req, res, next) => {
         return next();
       }
       else{
-        console.log('COMMENT BEING DELETED', comment[0]);
         return Post.findById(postId)
           .populate({
             path: 'comments',
@@ -80,7 +77,6 @@ router.delete('/:postId/:commentId', (req, res, next) => {
       }
     })
     .then((post) => {
-      console.log('DATA BEING SENT BACK TO CLIENT', post); 
       io.emit('delete_comment', post); 
       res.sendStatus(204);
     })

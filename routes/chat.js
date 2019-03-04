@@ -19,11 +19,9 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
       //if the chat between these two users hasn't been created yet, create it
       if(chat.length===0){
         newChat=true;
-        console.log('NO CHAT');
         return Chat.create({namespace: namespace, participants: [userId1, userId2]});
       }
       else{
-        console.log('YES CHAT');
         return chat[0];
       }
     })
@@ -35,7 +33,6 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
       return Promise.all([promiseOne, promiseTwo]);
     })
     .then(([user1, user2])=>{
-      console.log('USER1', user1, 'USER2', user2);
       if (user1.length===0 || user2.length===0 ){
         const pinChatToUserOnePromise = User.findByIdAndUpdate( {_id: userId1}, {$push: {pinnedChatUsers: userId2}}, {new: true});
         const pinChatToUserTwoPromise = User.findByIdAndUpdate( {_id: userId2}, {$push: {pinnedChatUsers: userId1}}, {new: true});
@@ -46,7 +43,6 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
       }
     })
     .then(()=> {
-      console.log('2. CHAT IS', finalChat);
       return Chat.findById({_id: finalChat._id})
         .populate({
           path: 'messages',
@@ -55,7 +51,6 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
         .populate('participants');
     })
     .then(chat=>{
-      console.log('3.CHAT IS', chat);
       return res.json(chat);
     })
     .catch(err => {
