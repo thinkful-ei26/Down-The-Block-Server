@@ -33,7 +33,6 @@ router.get('/:namespace/:userId1/:userId2', (req, res, next) => {
       return User.find({_id: userId1, pinnedChatUsers:{$in: userId2}});
     })
     .then(user=>{
-      console.log('AFTER CHECKING, USER IS', user);
       if (user.length===0){
         const pinChatToUserOnePromise = User.findByIdAndUpdate( {_id: userId1}, {$push: {pinnedChatUsers: userId2}}, {new: true});
         const pinChatToUserTwoPromise = User.findByIdAndUpdate( {_id: userId2}, {$push: {pinnedChatUsers: userId1}}, {new: true});
