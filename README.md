@@ -1,42 +1,65 @@
-# [Down The Block](https://down-the-block.herokuapp.com)
+# [DownTheBlock](https://down-the-block.herokuapp.com)
 
 ## Welcome to DownTheBlock - Your Neighborhood at Your Fingertips
-![pasted image 0](https://user-images.githubusercontent.com/43651736/53673209-6f57a100-3c43-11e9-8926-d7a35b3517d1.png)
+DownTheBlock gives you a convenient way to stay informed by connecting you with all your neighbors. Lost a pet and desperately need your neighbors help to find him/her? Hear a helicopter hovering above your house and don't know why? Join DownTheBlock today and you'll be up-to-date on everything happening close to home as well as in the broader community. From criminal activity to local events, you'll hear it all from here!
 
-## Features
-:white_check_mark: Users with a registered account will be able to see posts in two different forums depending on their geolocation 
+## Features (for registered users)
+:white_check_mark: Upon registering, users will be asked for access to their location and subsequently connected with their own personal neighborhood
 
-:white_check_mark: Neighbors forum shows users posts within a 1 mile radius, while the city forum shows posts within a 5 mile radius
+:white_check_mark: Users will be able to see, and post, in two different forums; the neighbors forum has a 1 mile geofence, while the city forum has a 5 mile geofence
 
-:white_check_mark: Users can post, comment, filter, and search the forums in real-time
+:white_check_mark: Users can post, upload pictures, comment, filter, and search the forums in real-time
 
 :white_check_mark: Users can search for and directly message their neighbors within a 1 mile radius for a more private experience
 
-### Neighbors Forum
-![alt text](https://github.com/thinkful-ei26/Down-The-Block-Client/blob/dev/public/screenshot.png "Sims")
+## App Screenshots
 
-### City Forum
-![alt text](https://github.com/thinkful-ei26/Down-The-Block-Client/blob/dev/public/screenshot2.png "Sims")
+### Onboarding
+<img src='./src/img/onboarding.png' alt='Onboarding Screenshot' width='900px'/>
 
-## Tech Stack: 
-Full-stack app with:
-- React for the frontend
-- Redux for state management
-- Node/Express for the backend
-- MongoDB for the database hosted on Atlas
-- JWTs for authentication
-- Socket.io for real-time updates
+### Forum
+<img src='./src/img/forum.png' alt='Onboarding Screenshot' width='900px'/>
+
+### Direct Messaging
+<img src='./src/img/chat.png' alt='Onboarding Screenshot' width='900px'/>
+
+## Tech Specs: 
+**Front-end:**
+- React
+- Redux
+- Javascript
+- Socket.io 
+- HTML5
+- Sass
+
+**Back-end**
+- Node
+- Express
+- MongoDB hosted on Atlas
+- JWT 
+- Passport 
+- Socket.io 
+
+**Workflow**
+- Agile/SCRUM 
 
 ## Future Updates
-:point_right:Send notifications when a user has an unread chat
+:point_right: Send notifications when a user has an unread chat
 
 :point_right: More diverse categories for posts
-
-:point_right: Verify users live in neighborhood
 
 :point_right: Use pagination instead of infinite scroll 
 
 :point_right: Display a map of user’s geofilter
+
+## Team
+<a href="https://github.com/nikmash711" target="_blank"> **Nikkie Mashian**</a>: Product Owner & Design Lead
+
+<a href="https://github.com/ethanfrigon" target="_blank"> **Ethan Frigon**</a>: Project Manager
+
+<a href="https://github.com/IllegalSkillsException-active" target="_blank"> **Taylor Merrill**</a>: QA Lead
+
+<a href="https://github.com/stevezg" target="_blank"> **Steve Anderson**</a>: DevOps Lead
 
 ## Links
 [Server Repo](https://github.com/thinkful-ei26/Down-The-Block-Server)
@@ -48,8 +71,6 @@ Full-stack app with:
 [Project Management Trello Link](https://trello.com/b/hPCzbOTZ/neighborhood-watch "trello")
 
 ## Demo Info (Friends Edition)
-- Demo Account Username: ross
-
-- Demo Account Password: friends123
-
-- Set location to block on browser, and manually put in 15098 Ventura Blvd, Sherman Oaks, CA 91403 into the address form to see the app in action!
+**Since this is  a geolocation app, to properly see the pre-populated demo you must block your location on your browser**
+- Account Username: ross
+- Account Password: friends123
