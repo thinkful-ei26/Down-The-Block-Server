@@ -59,6 +59,10 @@ function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function formatName(name) {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 /* GET A LIST OF ALL PINNED CHATS FOR THIS USER */
 router.get('/pinnedChatUsers', jwtAuth, (req, res, next)=>{
   console.log('HERE IN PINNED USER');
@@ -190,7 +194,9 @@ router.post('/', (req,res,next) => {
   // // Username and password were validated as pre-trimmed, but we should trim the first and last name
   let {firstName, lastName, registerUsername, password} = req.body;
   firstName = firstName.trim();
+  firstName = formatName(firstName);
   lastName = lastName.trim();
+  lastName = formatName(lastName);
 
   //capitalize first letter of firt and first letter of last
   firstName = capitalizeFirstLetter(firstName);
@@ -198,8 +204,6 @@ router.post('/', (req,res,next) => {
 
   let finalPhoto={};
   let currentUser;
-
-  console.log('HERE2');
 
   return ( !isEmpty(req.files) ? cloudinary.uploader.upload(Object.values(req.files)[0].path) : Promise.resolve() )
     .then(results=>{
@@ -501,7 +505,7 @@ router.delete('/pinnedChatUsers/:chatUserId', jwtAuth, (req, res, next)=>{
   let {chatUserId} = req.params;
 
   User.findOneAndUpdate({_id: userId},
-    { $pull: { pinnedChatUsers: chatUserId } }
+    { $pull: { pinnedChatUsers: chatUserId } }, { new: true}
   )
     .populate('pinnedChatUsers')
     .then(user=>{
