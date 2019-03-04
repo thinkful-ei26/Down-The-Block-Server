@@ -21,11 +21,8 @@ router.put('/:namespace', (req, res, next) => {
   const { content, date, author, chatId } = req.body;
   const message = { content, author, date, chatId };
 
-  console.log('1.THE MESSAGE IS', message);
-
   Message.create(message)
     .then(message => {
-      console.log('2.CREATED MESSAGE IS', message);
       return Chat.findByIdAndUpdate( {_id: chatId}, {$push: {messages: message.id}}, {new: true})
         .populate({
           path: 'messages',
@@ -34,7 +31,6 @@ router.put('/:namespace', (req, res, next) => {
         .populate('participants');
     })
     .then(chat => {
-      console.log('3.CHAT BEING SENT BACK IS', chat);
       nsp[req.params.namespace].emit('chat', chat);
       return res.status(201).json(chat);
     })
