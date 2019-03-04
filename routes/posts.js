@@ -12,7 +12,6 @@ const { io } = require('../utils/socket');
 const router = express.Router();
 router.use(formData.parse());
 
-
 /* GET ALL POSTS */
 router.get('/:geo/:forum', (req, res, next) => {
   const coordsObject = JSON.parse(req.params.geo);
@@ -51,7 +50,6 @@ router.post('/:geo/:forum', (req, res, next) => {
   let coordinates = JSON.parse(req.params.geo);
   newPost.coordinates = coordinates;
   let photo, post; 
-  console.log('the newPost is', newPost);
 
   if(!newPost.category || !newPost.date || !newPost.content || !newPost.coordinates || !newPost.audience){
     //this error should be displayed to user incase they forget to add a note. Dont trust client!
@@ -68,19 +66,16 @@ router.post('/:geo/:forum', (req, res, next) => {
     .then(newPost=> {
       post = newPost;
       if(!isEmpty(req.files)){
-        console.log('2. UPLOADING TO CLOUDINARY');
         photo = Object.values(req.files);
         // first upload the image to cloudinary
         return cloudinary.uploader.upload(photo[0].path);
       }
       else{
-        console.log('2. NOT UPLOADING TO CLOUDINARY');
         return null;
       }
     })
     .then(results => {
       if(results){
-        console.log('3. CLOUDINARY RESULTS:', results);
         photo = {
           public_id: results.public_id,
           url: results.secure_url,
@@ -93,7 +88,6 @@ router.post('/:geo/:forum', (req, res, next) => {
           .populate('userId');
       }
       else{
-        console.log('3. NO RESULTS:');
         return Post.findById(post._id)
           .populate({
             path: 'comments',
@@ -103,7 +97,6 @@ router.post('/:geo/:forum', (req, res, next) => {
       }
     })
     .then(post => {
-      console.log('THE POST BEING SENT BACK IS', post);
       io.emit('new_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
@@ -141,7 +134,6 @@ router.put('/:postId', (req, res, next) => {
         .populate('userId');
     })
     .then((post) => {
-      console.log('EDITED POST BEING SENT BAC', post);
       io.emit('edited_post', post);
       return res.location(`http://${req.headers.host}/posts/${post.id}`).status(201).json(post);
     })
@@ -162,12 +154,10 @@ router.delete('/:postId', (req, res, next) => {
   return Promise.all([postDeletePromise, commentsDeletePromise])
     .then((post) => {
       if(!post){
-        console.log('here1');
         // if trying to delete something that no longer exists or never did
         return next();
       }
       else{
-        console.log('here2');
         io.emit('delete_post', post[0]);
         res.sendStatus(204);
       }

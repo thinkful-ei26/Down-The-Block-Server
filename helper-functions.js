@@ -23,7 +23,6 @@ function calculateGeoFilterNeighbors(coordsObject){
   // one mile at the equator 0.01445713459592308804394968917161 degrees
   const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
   const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-  console.log(oneMileLongitudeInDegrees);
   const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
   const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 

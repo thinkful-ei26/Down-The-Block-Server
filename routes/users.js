@@ -65,9 +65,7 @@ function formatName(name) {
 
 /* GET A LIST OF ALL PINNED CHATS FOR THIS USER */
 router.get('/pinnedChatUsers', jwtAuth, (req, res, next)=>{
-  console.log('HERE IN PINNED USER');
   const userId = req.user.id;
-  console.log('id is', userId);
 
   User.findById({_id: userId})
     .populate('pinnedChatUsers')
@@ -76,7 +74,6 @@ router.get('/pinnedChatUsers', jwtAuth, (req, res, next)=>{
       return res.json(pinnedChatUsers);
     })
     .catch(err => {
-      console.log('THERES AN ERROR');
       next(err);
     });
 });
@@ -86,7 +83,6 @@ router.get('/:coords', jwtAuth, (req,res,next) => {
   const coordsObject = JSON.parse(req.params.coords);
   const userId = req.user.id;
 
-  console.log('COORDS OBJ IN USERS', coordsObject);
   let filter; 
 
   // each 0.014631 of latitude equals one mile (this varies very slightly because the earth isn't perfectly spherical, but is close enough to true for our use case)
@@ -99,7 +95,6 @@ router.get('/:coords', jwtAuth, (req,res,next) => {
   // one mile at the equator 0.01445713459592308804394968917161 degrees
   const oneDegreeLongitude = Math.cos(coordsObject.latitude * Math.PI/180) * 69.172;
   const oneMileLongitudeInDegrees = 1/oneDegreeLongitude;
-  console.log(oneMileLongitudeInDegrees);
   const longitudeMin = coordsObject.longitude - oneMileLongitudeInDegrees;
   const longitudeMax = coordsObject.longitude + oneMileLongitudeInDegrees;
 
@@ -107,7 +102,6 @@ router.get('/:coords', jwtAuth, (req,res,next) => {
 
   User.find(filter)
     .then(users => {
-      console.log('IN USERS');
       res.json(users);
     })
     .catch(err => {
@@ -117,7 +111,6 @@ router.get('/:coords', jwtAuth, (req,res,next) => {
 
 /* CREATE A USER */
 router.post('/', (req,res,next) => {
-  console.log('HERE1');
   //First do validation (dont trust client)
   const requiredFields = ['registerUsername', 'password', 'firstName', 'lastName'];
 
@@ -207,7 +200,6 @@ router.post('/', (req,res,next) => {
 
   return ( !isEmpty(req.files) ? cloudinary.uploader.upload(Object.values(req.files)[0].path) : Promise.resolve() )
     .then(results=>{
-      console.log('RESULTS ARE', results);
       if(results){
         finalPhoto={
           public_id: results.public_id,
@@ -217,7 +209,6 @@ router.post('/', (req,res,next) => {
       return User.hashPassword(password);
     })
     .then(digest => {
-      console.log('1. CREATING USER WITH INFO', registerUsername,digest,firstName,lastName, finalPhoto);
       const newUser = {
         username: registerUsername,
         password: digest,
@@ -228,7 +219,6 @@ router.post('/', (req,res,next) => {
       return User.create(newUser);
     })
     .then(user => {
-      console.log('4. USER IS', user);
       // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
       return res.status(201).json(user);
     })
@@ -247,7 +237,6 @@ router.post('/', (req,res,next) => {
 
 /* UPDATE A USER'S BASIC INFO */
 router.put('/account', jwtAuth, (req,res,next) => {
-  console.log('HERE');
   const userId = req.user.id;
 
   //First do validation
@@ -447,7 +436,6 @@ router.put('/password', jwtAuth, (req,res,next) => {
       return User.findOneAndUpdate({_id: userId}, updatedUser, {new: true});
     })
     .then(user => {
-      console.log('USER IS', user);
       return res.json(user);
     })
     .catch(err => {
@@ -457,13 +445,11 @@ router.put('/password', jwtAuth, (req,res,next) => {
 
 /* UPDATE A USER'S PROFILE PHOTO */
 router.put('/photo', jwtAuth, (req,res,next) => {
-  console.log('IN PHOTO ROUTE');
   const userId = req.user.id;
   const file = Object.values(req.files);
 
   cloudinary.uploader.upload(file[0].path)
     .then(results => {
-      console.log('RESULTS from cloudinary:', results);
       let photo = {
         public_id: results.public_id,
         url: results.secure_url,
@@ -474,7 +460,6 @@ router.put('/photo', jwtAuth, (req,res,next) => {
       return User.findOneAndUpdate({_id: userId}, {photo}, {new: true});
     })
     .then(user => {
-      console.log('4. USER IS', user);
       // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
       return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
     })
@@ -490,7 +475,6 @@ router.put('/location/:coords', jwtAuth, (req,res,next) => {
 
   User.findOneAndUpdate({_id: userId}, {coordinates}, {new: true})
     .then(user => {
-      console.log('UPDATED USER IS', user);
       // The endpoint creates a new user in the database and responds with a 201 status, a location header and a JSON representation of the user without the password.
       return res.status(201).location(`http://${req.headers.host}/users/${user.id}`).json(user);
     })
@@ -513,7 +497,6 @@ router.delete('/pinnedChatUsers/:chatUserId', jwtAuth, (req, res, next)=>{
       return res.json(pinnedChatUsers);
     })
     .catch(err => {
-      console.log('THERES AN ERROR');
       next(err);
     });
 });
