@@ -501,7 +501,7 @@ router.delete('/pinnedChatUsers/:chatUserId', jwtAuth, (req, res, next)=>{
   let {chatUserId} = req.params;
 
   User.findOneAndUpdate({_id: userId},
-    { $pull: { pinnedChatUsers: chatUserId } }
+    { $pull: { pinnedChatUsers: chatUserId } }, { new: true}
   )
     .populate('pinnedChatUsers')
     .then(user=>{
