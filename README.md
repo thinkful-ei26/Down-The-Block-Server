@@ -10,7 +10,7 @@
 
 :white_check_mark: Users can post, comment, filter, and search the forums in real-time
 
-:white_check_mark: Users can directly message their neighbors within a 1 mile radius for a more private experience
+:white_check_mark: Users can search for and directly message their neighbors within a 1 mile radius for a more private experience
 
 ### Neighbors Forum
 ![alt text](https://github.com/thinkful-ei26/Down-The-Block-Client/blob/dev/public/screenshot.png "Sims")
@@ -29,8 +29,6 @@ Full-stack app with:
 
 ## Future Updates
 :point_right:Send notifications when a user has an unread chat
-
-:point_right: Search for users around you
 
 :point_right: More diverse categories for posts
 
