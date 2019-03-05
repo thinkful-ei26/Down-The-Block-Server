@@ -15,13 +15,13 @@ DownTheBlock gives you a convenient way to stay informed by connecting you with 
 ## App Screenshots
 
 ### Onboarding
-<img src='./src/img/onboarding.png' alt='Onboarding Screenshot' width='900px'/>
+<img src='./img/onboarding.png' alt='Onboarding Screenshot' width='900px'/>
 
 ### Forum
-<img src='./src/img/forum.png' alt='Onboarding Screenshot' width='900px'/>
+<img src='./img/forum.png' alt='Onboarding Screenshot' width='900px'/>
 
 ### Direct Messaging
-<img src='./src/img/chat.png' alt='Onboarding Screenshot' width='900px'/>
+<img src='./img/chat.png' alt='Onboarding Screenshot' width='900px'/>
 
 ## Tech Specs: 
 **Front-end:**
@@ -53,7 +53,7 @@ DownTheBlock gives you a convenient way to stay informed by connecting you with 
 :point_right: Display a map of user’s geofilter
 
 ## Team
-<a href="https://github.com/nikmash711" target="_blank"> **Nikkie Mashian**</a>: Product Owner & Design Lead
+<a href="https://github.com/nikmash711" target="_blank"> **Nikkie Mashian**</a>: Product Manager & Design Lead
 
 <a href="https://github.com/ethanfrigon" target="_blank"> **Ethan Frigon**</a>: Project Manager
 
