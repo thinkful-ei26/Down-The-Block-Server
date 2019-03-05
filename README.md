@@ -1,8 +1,8 @@
 # [DownTheBlock](https://down-the-block.herokuapp.com)
 
 ## Welcome to DownTheBlock - Your Neighborhood at Your Fingertips
-DownTheBlock gives you a convenient way to stay informed by connecting you with all your neighbors. Lost a pet and desperately need your neighbors help to find him/her? Hear a helicopter hovering above your house and don't know why? Join DownTheBlock today and you'll be up-to-date on everything happening close to home as well as in the broader community. From criminal activity to local events, you'll hear it all from here!
-
+ DownTheBlock connects you with your neighborhood and provides a convenient way of staying informed. Whether you lost your pet, are throwing an event, or want to be aware of the latest criminal activity around you, DownTheBlock is here to help. Join today to stay up-to-date on everything happening close to home as well as in the broader community!
+ 
 ## Features (for registered users)
 :white_check_mark: Upon registering, users will be asked for access to their location and subsequently connected with their own personal neighborhood
 
