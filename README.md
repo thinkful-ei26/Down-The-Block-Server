@@ -15,13 +15,13 @@ DownTheBlock gives you a convenient way to stay informed by connecting you with 
 ## App Screenshots
 
 ### Onboarding
-<img src='./img/onboarding.png' alt='Onboarding Screenshot' width='900px'/>
+<img src='./assets/onboarding.png' alt='Onboarding Screenshot' width='900px'/>
 
 ### Forum
-<img src='./img/forum.png' alt='Onboarding Screenshot' width='900px'/>
+<img src='./assets/forum.png' alt='Onboarding Screenshot' width='900px'/>
 
 ### Direct Messaging
-<img src='./img/chat.png' alt='Onboarding Screenshot' width='900px'/>
+<img src='./assets/chat.png' alt='Onboarding Screenshot' width='900px'/>
 
 ## Tech Specs: 
 **Front-end:**
