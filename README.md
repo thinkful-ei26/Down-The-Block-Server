@@ -62,13 +62,11 @@
 <a href="https://github.com/stevezg" target="_blank"> **Steve Anderson**</a>: DevOps Lead
 
 ## Links
-[Server Repo](https://github.com/thinkful-ei26/Down-The-Block-Server)
+[Client Repo](https://github.com/thinkful-ei26/Down-The-Block-Client)
 
 [Deployed Server On Heroku](https://down-the-block-server.herokuapp.com/)
 
 [Deployed Client On Heroku](https://down-the-block.herokuapp.com)
-
-[Project Management Trello Link](https://trello.com/b/hPCzbOTZ/neighborhood-watch "trello")
 
 ## Demo Info (Friends Edition)
 **Since this is  a geolocation app, to properly see the pre-populated demo you must block your location on your browser**
