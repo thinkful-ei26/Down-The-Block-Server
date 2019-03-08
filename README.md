@@ -132,3 +132,50 @@
 }
 ```
 
+## API Overview
+```
+/api
+.
+├──/auth
+    └── POST
+        ├── /login
+        ├── /refresh
+        ├── /refresh-profile
+        
+/api
+.
+├── /auth
+│   └── POST
+│       ├── /login
+│       ├── /refresh
+│       └── /refresh-profile
+├── /users
+│   └── GET /:coords
+│       └── /pinnedChatUsers
+│   └── POST /
+│   └── PUT
+│       ├── /account
+│       ├── /password
+│       ├── /photo
+│       └── /location/:coords
+│   └── DELETE /pinnedChatUsers/:chatUserId
+├── /posts
+│   └── GET /:geo/:forum
+│   └── POST /:geo/:forum
+│   └── PUT /:postId
+│   └── DELETE /:postId
+├── /comments
+│   └── POST /
+│   └── PUT /:postId/:commentId
+│   └── DELETE /:postId/:commentId
+├── /chat
+│   └── GET /:namespace/:userId1/:userId2
+├── /message
+│   └── POST /:namespace
+│   └── PUT /:namespace
+```
+
+
+        
+    
+   
