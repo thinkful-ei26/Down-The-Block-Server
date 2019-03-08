@@ -133,15 +133,7 @@
 ```
 
 ## API Overview
-```
-/api
-.
-├──/auth
-    └── POST
-        ├── /login
-        ├── /refresh
-        ├── /refresh-profile
-        
+```        
 /api
 .
 ├── /auth
