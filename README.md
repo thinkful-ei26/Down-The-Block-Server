@@ -72,3 +72,100 @@
 **Since this is  a geolocation app, to properly see the pre-populated demo you must block your location on your browser**
 - Account Username: ross
 - Account Password: friends123
+
+## Schema
+### User
+```
+{
+  firstName:  {type: String, required: true},
+  lastName: {type: String, required: true},
+  username: {type: String, required: true, unique: true},
+  password: {type: String, required: true},
+  photo: { type: Object },
+  coordinates: { type: Object },
+  pinnedChatUsers: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+}
+```
+
+### Post
+```
+{
+  category: { type: String, required: true },
+  date: { type: String, required: true },
+  content: { type: String, required: true },
+  coordinates: { type: Object, required: true },
+  photo: { type: Object },
+  comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comment'}],
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  audience: { type: String, required: true }
+}
+```
+
+### Comment
+```
+{
+  content: { type: String, required: true },
+  date: { type: String, required: true },
+  postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true  },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+}
+```
+
+### Chat
+```
+{
+  messages: [{type: mongoose.Schema.Types.ObjectId, ref: 'Message'}],
+  participants: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+  namespace: { type: String }
+}
+```
+
+### Message
+```
+{
+  content: { type: String, required: true },
+  date: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
+  chatId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chat', required: true }
+}
+```
+
+## API Overview
+```        
+/api
+.
+├── /auth
+│   └── POST
+│       ├── /login
+│       ├── /refresh
+│       └── /refresh-profile
+├── /users
+│   └── GET /:coords
+│       └── /pinnedChatUsers
+│   └── POST /
+│   └── PUT
+│       ├── /account
+│       ├── /password
+│       ├── /photo
+│       └── /location/:coords
+│   └── DELETE /pinnedChatUsers/:chatUserId
+├── /posts
+│   └── GET /:geo/:forum
+│   └── POST /:geo/:forum
+│   └── PUT /:postId
+│   └── DELETE /:postId
+├── /comments
+│   └── POST /
+│   └── PUT /:postId/:commentId
+│   └── DELETE /:postId/:commentId
+├── /chat
+│   └── GET /:namespace/:userId1/:userId2
+├── /message
+│   └── POST /:namespace
+│   └── PUT /:namespace
+```
+
+
+        
+    
+   
