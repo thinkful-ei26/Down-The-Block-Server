@@ -62,7 +62,7 @@
 <a href="https://github.com/stevezg" target="_blank"> **Steve Anderson**</a>: DevOps Lead
 
 ## Links
-[Server Repo](https://github.com/thinkful-ei26/Down-The-Block-Server)
+[Client Repo](https://github.com/thinkful-ei26/Down-The-Block-Client)
 
 [Deployed Server On Heroku](https://down-the-block-server.herokuapp.com/)
 
