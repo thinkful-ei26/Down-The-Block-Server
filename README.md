@@ -150,7 +150,8 @@
 │       ├── /password
 │       ├── /photo
 │       └── /location/:coords
-│   └── DELETE /pinnedChatUsers/:chatUserId
+│   └── DELETE 
+│       └── /pinnedChatUsers/:chatUserId
 ├── /posts
 │   └── GET /:geo/:forum
 │   └── POST /:geo/:forum
